@@ -2,7 +2,7 @@ package com.example.sportevents.data.repositories
 
 import com.example.sportevents.data.models.*
 import com.example.sportevents.data.network.RetrofitClient
-import com.example.sportevents.util.Resource
+import com.example.sportevents.util.NetworkResult
 
 class EventRepository : BaseRepository() {
     private val apiService = RetrofitClient.apiService
@@ -18,28 +18,41 @@ class EventRepository : BaseRepository() {
         city: String? = null,
         dateFrom: String? = null,
         dateTo: String? = null
-    ): Resource<List<Event>> {
+    ): NetworkResult<List<Event>> {
         return safeApiCall {
             apiService.getEvents(
                 sportTypeId, eventTypeId, status, isPublic, search,
                 ordering, includePrivate, city, dateFrom, dateTo
             )
+        }.let { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    // Извлекаем список результатов из пагинированного ответа
+                    NetworkResult.Success(result.data.results)
+                }
+                is NetworkResult.Error -> {
+                    result
+                }
+                is NetworkResult.Loading -> {
+                    result
+                }
+            }
         }
     }
 
-    suspend fun getEvent(id: Int): Resource<Event> {
+    suspend fun getEvent(id: Int): NetworkResult<Event> {
         return safeApiCall { apiService.getEvent(id) }
     }
 
-    suspend fun createEvent(eventCreateRequest: EventCreateRequest): Resource<Event> {
+    suspend fun createEvent(eventCreateRequest: EventCreateRequest): NetworkResult<Event> {
         return safeApiCall { apiService.createEvent(eventCreateRequest) }
     }
 
-    suspend fun updateEvent(id: Int, updates: Map<String, Any>): Resource<Event> {
+    suspend fun updateEvent(id: Int, updates: Map<String, Any>): NetworkResult<Event> {
         return safeApiCall { apiService.updateEvent(id, updates) }
     }
 
-    suspend fun deleteEvent(id: Int): Resource<Unit> {
+    suspend fun deleteEvent(id: Int): NetworkResult<Unit> {
         return safeApiCall { apiService.deleteEvent(id) }
     }
 }

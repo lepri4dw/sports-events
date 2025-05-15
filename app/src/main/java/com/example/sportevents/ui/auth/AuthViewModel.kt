@@ -7,17 +7,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.sportevents.data.models.User
 import com.example.sportevents.data.repositories.AuthRepository
 import com.example.sportevents.util.AuthManager
-import com.example.sportevents.util.Resource
+import com.example.sportevents.util.NetworkResult
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
     private val repository = AuthRepository()
 
-    private val _loginResult = MutableLiveData<Resource<User>>()
-    val loginResult: LiveData<Resource<User>> = _loginResult
+    private val _loginResult = MutableLiveData<NetworkResult<User>>()
+    val loginResult: LiveData<NetworkResult<User>> = _loginResult
 
-    private val _registerResult = MutableLiveData<Resource<User>>()
-    val registerResult: LiveData<Resource<User>> = _registerResult
+    private val _registerResult = MutableLiveData<NetworkResult<User>>()
+    val registerResult: LiveData<NetworkResult<User>> = _registerResult
 
     private val _currentUser = MutableLiveData<User?>()
     val currentUser: LiveData<User?> = _currentUser
@@ -27,26 +27,34 @@ class AuthViewModel : ViewModel() {
     }
 
     fun login(email: String, password: String) {
-        _loginResult.value = Resource.Loading
+        _loginResult.value = NetworkResult.Loading
 
         viewModelScope.launch {
             val result = repository.loginUser(email, password)
-            _loginResult.value = result.map { it.user }
+            _loginResult.value = when (result) {
+                is NetworkResult.Success -> NetworkResult.Success(result.data.user)
+                is NetworkResult.Error -> NetworkResult.Error(result.message)
+                is NetworkResult.Loading -> NetworkResult.Loading
+            }
 
-            if (result is Resource.Success) {
+            if (result is NetworkResult.Success) {
                 _currentUser.value = result.data.user
             }
         }
     }
 
     fun register(email: String, displayName: String, password: String) {
-        _registerResult.value = Resource.Loading
+        _registerResult.value = NetworkResult.Loading
 
         viewModelScope.launch {
             val result = repository.registerUser(email, displayName, password)
-            _registerResult.value = result.map { it.user }
+            _registerResult.value = when (result) {
+                is NetworkResult.Success -> NetworkResult.Success(result.data.user)
+                is NetworkResult.Error -> NetworkResult.Error(result.message)
+                is NetworkResult.Loading -> NetworkResult.Loading
+            }
 
-            if (result is Resource.Success) {
+            if (result is NetworkResult.Success) {
                 _currentUser.value = result.data.user
             }
         }

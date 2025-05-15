@@ -13,7 +13,7 @@ import com.example.sportevents.data.repositories.EventRepository
 import com.example.sportevents.data.repositories.EventTypeRepository
 import com.example.sportevents.data.repositories.LocationRepository
 import com.example.sportevents.data.repositories.SportTypeRepository
-import com.example.sportevents.util.Resource
+import com.example.sportevents.util.NetworkResult
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
@@ -23,17 +23,17 @@ class EventCreateViewModel : ViewModel() {
     private val eventTypeRepository = EventTypeRepository()
     private val locationRepository = LocationRepository()
 
-    private val _createEventResult = MutableLiveData<Resource<Event>>()
-    val createEventResult: LiveData<Resource<Event>> = _createEventResult
+    private val _createEventResult = MutableLiveData<NetworkResult<Event>>()
+    val createEventResult: LiveData<NetworkResult<Event>> = _createEventResult
 
-    private val _sportTypes = MutableLiveData<Resource<List<SportType>>>()
-    val sportTypes: LiveData<Resource<List<SportType>>> = _sportTypes
+    private val _sportTypes = MutableLiveData<NetworkResult<List<SportType>>>()
+    val sportTypes: LiveData<NetworkResult<List<SportType>>> = _sportTypes
 
-    private val _eventTypes = MutableLiveData<Resource<List<EventType>>>()
-    val eventTypes: LiveData<Resource<List<EventType>>> = _eventTypes
+    private val _eventTypes = MutableLiveData<NetworkResult<List<EventType>>>()
+    val eventTypes: LiveData<NetworkResult<List<EventType>>> = _eventTypes
 
-    private val _locations = MutableLiveData<Resource<List<Location>>>()
-    val locations: LiveData<Resource<List<Location>>> = _locations
+    private val _locations = MutableLiveData<NetworkResult<List<Location>>>()
+    val locations: LiveData<NetworkResult<List<Location>>> = _locations
 
     init {
         loadSportTypes()
@@ -41,23 +41,23 @@ class EventCreateViewModel : ViewModel() {
         loadLocations()
     }
 
-    private fun loadSportTypes() {
+    fun loadSportTypes() {
         viewModelScope.launch {
-            _sportTypes.value = Resource.Loading
+            _sportTypes.value = NetworkResult.Loading
             _sportTypes.value = sportTypeRepository.getSportTypes()
         }
     }
 
-    private fun loadEventTypes() {
+    fun loadEventTypes() {
         viewModelScope.launch {
-            _eventTypes.value = Resource.Loading
+            _eventTypes.value = NetworkResult.Loading
             _eventTypes.value = eventTypeRepository.getEventTypes()
         }
     }
 
-    private fun loadLocations() {
+    fun loadLocations() {
         viewModelScope.launch {
-            _locations.value = Resource.Loading
+            _locations.value = NetworkResult.Loading
             _locations.value = locationRepository.getLocations()
         }
     }
@@ -73,15 +73,12 @@ class EventCreateViewModel : ViewModel() {
         endDateTime: String?,
         registrationDeadline: String?,
         maxParticipants: Int?,
-        status: String,
         isPublic: Boolean,
-        entryFee: String?,
+        entryFee: BigDecimal?,
         contactEmail: String?,
         contactPhone: String?
     ) {
-        _createEventResult.value = Resource.Loading
-
-        val entryFeeDecimal = if (entryFee.isNullOrEmpty()) null else BigDecimal(entryFee)
+        _createEventResult.value = NetworkResult.Loading
 
         val request = EventCreateRequest(
             title = title,
@@ -94,9 +91,9 @@ class EventCreateViewModel : ViewModel() {
             end_datetime = endDateTime,
             registration_deadline = registrationDeadline,
             max_participants = maxParticipants,
-            status = status,
+            status = "ACTIVE",
             is_public = isPublic,
-            entry_fee = entryFeeDecimal,
+            entry_fee = entryFee,
             contact_email = contactEmail,
             contact_phone = contactPhone
         )

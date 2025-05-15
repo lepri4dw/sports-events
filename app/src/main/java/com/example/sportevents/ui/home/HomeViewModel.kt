@@ -1,87 +1,150 @@
 package com.example.sportevents.ui.home
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.sportevents.data.models.Event
+import com.example.sportevents.data.models.EventType
+import com.example.sportevents.data.models.SportType
 import com.example.sportevents.data.repositories.EventRepository
-import com.example.sportevents.util.Resource
+import com.example.sportevents.data.repositories.EventTypeRepository
+import com.example.sportevents.data.repositories.SportTypeRepository
+import com.example.sportevents.util.NetworkResult
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
-    private val repository = EventRepository()
+    private val TAG = "HomeViewModel"
+    private val eventRepository = EventRepository()
+    private val sportTypeRepository = SportTypeRepository()
+    private val eventTypeRepository = EventTypeRepository()
 
-    private val _events = MutableLiveData<Resource<List<Event>>>()
-    val events: LiveData<Resource<List<Event>>> = _events
+    private val _events = MutableLiveData<NetworkResult<List<Event>>>()
+    val events: LiveData<NetworkResult<List<Event>>> = _events
 
-    private val _filteredEvents = MutableLiveData<List<Event>>()
-    val filteredEvents: LiveData<List<Event>> = _filteredEvents
+    private val _sportTypes = MutableLiveData<NetworkResult<List<SportType>>>()
+    val sportTypes: LiveData<NetworkResult<List<SportType>>> = _sportTypes
+
+    private val _eventTypes = MutableLiveData<NetworkResult<List<EventType>>>()
+    val eventTypes: LiveData<NetworkResult<List<EventType>>> = _eventTypes
+
+    // Сообщение об ошибке для отображения пользователю
+    private val _errorMessage = MutableLiveData<String>()
+    val errorMessage: LiveData<String> = _errorMessage
 
     // Store filter parameters
-    private var sportTypeId: Int? = null
-    private var eventTypeId: Int? = null
+    private val selectedSportTypeIds = mutableSetOf<Int>()
+    private val selectedEventTypeIds = mutableSetOf<Int>()
     private var searchQuery: String? = null
     private var city: String? = null
     private var dateFrom: String? = null
     private var dateTo: String? = null
-    private var includePrivate: Boolean = false
-
-    init {
-        loadEvents()
-    }
 
     fun loadEvents() {
-        _events.value = Resource.Loading
+        _events.value = NetworkResult.Loading
+        Log.d(TAG, "Loading events with filters: sportType=${if (selectedSportTypeIds.isEmpty()) "none" else selectedSportTypeIds}, " +
+                "eventType=${if (selectedEventTypeIds.isEmpty()) "none" else selectedEventTypeIds}, " +
+                "search=$searchQuery, city=$city")
 
         viewModelScope.launch {
-            val result = repository.getEvents(
+            val sportTypeId = if (selectedSportTypeIds.isNotEmpty()) selectedSportTypeIds.first() else null
+            val eventTypeId = if (selectedEventTypeIds.isNotEmpty()) selectedEventTypeIds.first() else null
+            
+            val result = eventRepository.getEvents(
                 sportTypeId = sportTypeId,
                 eventTypeId = eventTypeId,
                 search = searchQuery,
                 city = city,
                 dateFrom = dateFrom,
                 dateTo = dateTo,
-                includePrivate = includePrivate
+                includePrivate = false
             )
-
-            _events.value = result
-
-            if (result is Resource.Success) {
-                _filteredEvents.value = result.data
+            
+            when (result) {
+                is NetworkResult.Success -> {
+                    Log.d(TAG, "Successfully loaded ${result.data.size} events")
+                    _events.value = result
+                }
+                is NetworkResult.Error -> {
+                    Log.e(TAG, "Failed to load events: ${result.message}")
+                    _errorMessage.value = "Ошибка загрузки событий: ${result.message}"
+                    _events.value = result
+                }
+                is NetworkResult.Loading -> {
+                    _events.value = result
+                }
             }
         }
     }
 
-    fun applyFilters(
-        sportType: Int? = null,
-        eventType: Int? = null,
-        search: String? = null,
-        city: String? = null,
-        from: String? = null,
-        to: String? = null,
-        includePrivate: Boolean = false
-    ) {
-        this.sportTypeId = sportType
-        this.eventTypeId = eventType
-        this.searchQuery = search
-        this.city = city
-        this.dateFrom = from
-        this.dateTo = to
-        this.includePrivate = includePrivate
+    fun loadSportTypes() {
+        _sportTypes.value = NetworkResult.Loading
+        
+        viewModelScope.launch {
+            val result = sportTypeRepository.getSportTypes()
+            _sportTypes.value = result
+            
+            if (result is NetworkResult.Error) {
+                Log.e(TAG, "Failed to load sport types: ${result.message}")
+                _errorMessage.value = "Ошибка загрузки типов спорта: ${result.message}"
+            }
+        }
+    }
 
+    fun loadEventTypes() {
+        _eventTypes.value = NetworkResult.Loading
+        
+        viewModelScope.launch {
+            val result = eventTypeRepository.getEventTypes()
+            _eventTypes.value = result
+            
+            if (result is NetworkResult.Error) {
+                Log.e(TAG, "Failed to load event types: ${result.message}")
+                _errorMessage.value = "Ошибка загрузки типов событий: ${result.message}"
+            }
+        }
+    }
+
+    fun addSportTypeFilter(sportTypeId: Int) {
+        selectedSportTypeIds.add(sportTypeId)
+    }
+
+    fun removeSportTypeFilter(sportTypeId: Int) {
+        selectedSportTypeIds.remove(sportTypeId)
+    }
+
+    fun addEventTypeFilter(eventTypeId: Int) {
+        selectedEventTypeIds.add(eventTypeId)
+    }
+
+    fun removeEventTypeFilter(eventTypeId: Int) {
+        selectedEventTypeIds.remove(eventTypeId)
+    }
+
+    fun setSearchQuery(query: String?) {
+        searchQuery = if (query.isNullOrBlank()) null else query
+    }
+
+    fun setCityFilter(cityName: String?) {
+        city = if (cityName.isNullOrBlank()) null else cityName
+    }
+
+    fun setDateRange(from: String?, to: String?) {
+        dateFrom = from
+        dateTo = to
+    }
+
+    fun applyFilters() {
         loadEvents()
     }
 
     fun clearFilters() {
-        sportTypeId = null
-        eventTypeId = null
+        selectedSportTypeIds.clear()
+        selectedEventTypeIds.clear()
         searchQuery = null
         city = null
         dateFrom = null
         dateTo = null
-        includePrivate = false
-
-        loadEvents()
     }
 }

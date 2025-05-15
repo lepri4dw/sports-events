@@ -23,21 +23,21 @@ interface ApiService {
 
     // Sport Types
     @GET("sport-types/")
-    suspend fun getSportTypes(): Response<List<SportType>>
+    suspend fun getSportTypes(): Response<PaginatedResponse<SportType>>
 
     @GET("sport-types/{id}/")
     suspend fun getSportType(@Path("id") id: Int): Response<SportType>
 
     // Event Types
     @GET("event-types/")
-    suspend fun getEventTypes(): Response<List<EventType>>
+    suspend fun getEventTypes(): Response<PaginatedResponse<EventType>>
 
     @GET("event-types/{id}/")
     suspend fun getEventType(@Path("id") id: Int): Response<EventType>
 
     // Locations
     @GET("locations/")
-    suspend fun getLocations(@Query("city") city: String? = null): Response<List<Location>>
+    suspend fun getLocations(@Query("city") city: String? = null): Response<PaginatedResponse<Location>>
 
     @POST("locations/")
     suspend fun createLocation(@Body location: Location): Response<Location>
@@ -58,7 +58,7 @@ interface ApiService {
         @Query("city") city: String? = null,
         @Query("date_from") dateFrom: String? = null,
         @Query("date_to") dateTo: String? = null
-    ): Response<List<Event>>
+    ): Response<PaginatedResponse<Event>>
 
     @POST("events/")
     suspend fun createEvent(@Body eventCreateRequest: EventCreateRequest): Response<Event>
@@ -86,10 +86,10 @@ interface ApiService {
     suspend fun unregisterFromEvent(@Path("eventId") eventId: Int): Response<Unit>
 
     @GET("events/{eventId}/registrations/")
-    suspend fun getEventRegistrations(@Path("eventId") eventId: Int): Response<List<EventRegistration>>
+    suspend fun getEventRegistrations(@Path("eventId") eventId: Int): Response<PaginatedResponse<EventRegistration>>
 
     @GET("registrations/")
-    suspend fun getUserRegistrations(): Response<List<EventRegistration>>
+    suspend fun getUserRegistrations(): Response<PaginatedResponse<EventRegistration>>
 
     @GET("registrations/{id}/")
     suspend fun getRegistration(@Path("id") id: Int): Response<EventRegistration>
@@ -108,5 +108,5 @@ interface ApiService {
     ): Response<EventResult>
 
     @GET("results/")
-    suspend fun getResults(@Query("event_id") eventId: Int? = null): Response<List<EventResult>>
+    suspend fun getResults(@Query("event_id") eventId: Int? = null): Response<PaginatedResponse<EventResult>>
 }
