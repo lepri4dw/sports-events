@@ -39,6 +39,7 @@ class HomeFragment : Fragment() {
         setupObservers()
         setupSearchView()
         setupFilterButtons()
+        setupSwipeRefresh()
         
         // Load initial data
         viewModel.loadEvents()
@@ -60,11 +61,31 @@ class HomeFragment : Fragment() {
         }
     }
     
+    private fun setupSwipeRefresh() {
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            // Clear any search text
+            binding.searchView.setQuery("", false)
+            
+            // Reload data
+            viewModel.loadEvents()
+            viewModel.loadSportTypes()
+            viewModel.loadEventTypes()
+        }
+        
+        // Set colors for the refresh indicator
+        binding.swipeRefreshLayout.setColorSchemeResources(
+            R.color.purple_500,
+            R.color.teal_200,
+            R.color.purple_700
+        )
+    }
+    
     private fun setupObservers() {
         viewModel.events.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is NetworkResult.Success -> {
                     binding.progressBar.visibility = View.GONE
+                    binding.swipeRefreshLayout.isRefreshing = false
                     
                     if (result.data.isEmpty()) {
                         binding.textViewNoEvents.visibility = View.VISIBLE
@@ -77,13 +98,16 @@ class HomeFragment : Fragment() {
                 }
                 is NetworkResult.Error -> {
                     binding.progressBar.visibility = View.GONE
+                    binding.swipeRefreshLayout.isRefreshing = false
                     binding.textViewNoEvents.visibility = View.VISIBLE
                     binding.textViewNoEvents.text = "Error: ${result.message}"
                     binding.recyclerViewEvents.visibility = View.GONE
                     Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
                 }
                 is NetworkResult.Loading -> {
-                    binding.progressBar.visibility = View.VISIBLE
+                    if (!binding.swipeRefreshLayout.isRefreshing) {
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
                     binding.textViewNoEvents.visibility = View.GONE
                     binding.recyclerViewEvents.visibility = View.GONE
                 }

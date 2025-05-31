@@ -38,6 +38,7 @@ object AuthManager {
             putString(KEY_REFRESH_TOKEN, refreshToken)
             apply()
         }
+        Log.d(TAG, "Токены сохранены: access=${accessToken.take(15)}..., refresh=${refreshToken.take(15)}...")
     }
 
     fun saveUser(user: User) {
@@ -47,7 +48,9 @@ object AuthManager {
 
     fun getAccessToken(): String? {
         return try {
-            prefs.getString(KEY_ACCESS_TOKEN, null)
+            val token = prefs.getString(KEY_ACCESS_TOKEN, null)
+            Log.d(TAG, "Получен access token: ${token?.take(15)}...")
+            token
         } catch (e: UninitializedPropertyAccessException) {
             Log.e(TAG, "Failed to get access token: ${e.message}")
             null
@@ -56,7 +59,9 @@ object AuthManager {
 
     fun getRefreshToken(): String? {
         return try {
-            prefs.getString(KEY_REFRESH_TOKEN, null)
+            val token = prefs.getString(KEY_REFRESH_TOKEN, null)
+            Log.d(TAG, "Получен refresh token: ${token?.take(15)}...")
+            token
         } catch (e: UninitializedPropertyAccessException) {
             Log.e(TAG, "Failed to get refresh token: ${e.message}")
             null
@@ -80,7 +85,9 @@ object AuthManager {
 
     fun isLoggedIn(): Boolean {
         return try {
-            getAccessToken() != null && getCurrentUser() != null
+            val isLoggedIn = getAccessToken() != null && getCurrentUser() != null
+            Log.d(TAG, "Проверка статуса логина: $isLoggedIn")
+            isLoggedIn
         } catch (e: Exception) {
             Log.e(TAG, "Error checking login status: ${e.message}")
             false
@@ -95,6 +102,7 @@ object AuthManager {
                 remove(KEY_USER)
                 apply()
             }
+            Log.d(TAG, "Пользователь вышел из системы, токены удалены")
         } catch (e: UninitializedPropertyAccessException) {
             Log.e(TAG, "Failed to logout: ${e.message}")
         }

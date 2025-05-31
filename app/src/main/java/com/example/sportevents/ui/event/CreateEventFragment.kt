@@ -133,7 +133,7 @@ class CreateEventFragment : Fragment() {
                     binding.progressBar.visibility = View.GONE
                     binding.buttonCreateEvent.isEnabled = true
                     Toast.makeText(requireContext(), "Event created successfully", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_createEventFragment_to_navigation_dashboard)
+                    findNavController().navigate(R.id.action_createEventFragment_to_navigation_notifications)
                 }
                 is NetworkResult.Error -> {
                     binding.progressBar.visibility = View.GONE

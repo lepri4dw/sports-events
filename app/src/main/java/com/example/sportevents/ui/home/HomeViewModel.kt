@@ -48,31 +48,120 @@ class HomeViewModel : ViewModel() {
                 "search=$searchQuery, city=$city")
 
         viewModelScope.launch {
-            val sportTypeId = if (selectedSportTypeIds.isNotEmpty()) selectedSportTypeIds.first() else null
-            val eventTypeId = if (selectedEventTypeIds.isNotEmpty()) selectedEventTypeIds.first() else null
-            
-            val result = eventRepository.getEvents(
-                sportTypeId = sportTypeId,
-                eventTypeId = eventTypeId,
-                search = searchQuery,
-                city = city,
-                dateFrom = dateFrom,
-                dateTo = dateTo,
-                includePrivate = false
-            )
-            
-            when (result) {
-                is NetworkResult.Success -> {
-                    Log.d(TAG, "Successfully loaded ${result.data.size} events")
-                    _events.value = result
+            // Handle the case of multiple filters by doing multiple API requests and merging results
+            if (selectedSportTypeIds.size > 1 || selectedEventTypeIds.size > 1) {
+                val allEvents = mutableListOf<Event>()
+                val processedEventIds = mutableSetOf<Int>()
+                var hasError = false
+                var errorMessage = ""
+                
+                // If we have both multiple sport types and event types, we need to do multiple queries
+                // and then filter the results
+                if (selectedSportTypeIds.isNotEmpty()) {
+                    for (sportTypeId in selectedSportTypeIds) {
+                        val result = eventRepository.getEvents(
+                            sportTypeId = sportTypeId,
+                            eventTypeId = if (selectedEventTypeIds.size == 1) selectedEventTypeIds.first() else null,
+                            search = searchQuery,
+                            city = city,
+                            dateFrom = dateFrom,
+                            dateTo = dateTo,
+                            includePrivate = false
+                        )
+                        
+                        when (result) {
+                            is NetworkResult.Success -> {
+                                // Add events that haven't been added yet
+                                for (event in result.data) {
+                                    if (!processedEventIds.contains(event.id) && event.is_public) {
+                                        processedEventIds.add(event.id)
+                                        allEvents.add(event)
+                                    }
+                                }
+                            }
+                            is NetworkResult.Error -> {
+                                hasError = true
+                                errorMessage = result.message
+                            }
+                            is NetworkResult.Loading -> {
+                                // Ignore
+                            }
+                        }
+                    }
                 }
-                is NetworkResult.Error -> {
-                    Log.e(TAG, "Failed to load events: ${result.message}")
-                    _errorMessage.value = "Ошибка загрузки событий: ${result.message}"
-                    _events.value = result
+                
+                // If we have multiple event types but single/no sport type
+                if (selectedEventTypeIds.size > 1 && selectedSportTypeIds.size <= 1) {
+                    for (eventTypeId in selectedEventTypeIds) {
+                        val result = eventRepository.getEvents(
+                            sportTypeId = if (selectedSportTypeIds.size == 1) selectedSportTypeIds.first() else null,
+                            eventTypeId = eventTypeId,
+                            search = searchQuery,
+                            city = city,
+                            dateFrom = dateFrom,
+                            dateTo = dateTo,
+                            includePrivate = false
+                        )
+                        
+                        when (result) {
+                            is NetworkResult.Success -> {
+                                // Add events that haven't been added yet
+                                for (event in result.data) {
+                                    if (!processedEventIds.contains(event.id) && event.is_public) {
+                                        processedEventIds.add(event.id)
+                                        allEvents.add(event)
+                                    }
+                                }
+                            }
+                            is NetworkResult.Error -> {
+                                hasError = true
+                                errorMessage = result.message
+                            }
+                            is NetworkResult.Loading -> {
+                                // Ignore
+                            }
+                        }
+                    }
                 }
-                is NetworkResult.Loading -> {
-                    _events.value = result
+                
+                if (hasError && allEvents.isEmpty()) {
+                    Log.e(TAG, "Failed to load events: $errorMessage")
+                    _errorMessage.value = "Ошибка загрузки событий: $errorMessage"
+                    _events.value = NetworkResult.Error(errorMessage)
+                } else {
+                    Log.d(TAG, "Successfully loaded ${allEvents.size} events")
+                    _events.value = NetworkResult.Success(allEvents)
+                }
+            } else {
+                // Simple case with single sport type and event type filters
+                val sportTypeId = if (selectedSportTypeIds.isNotEmpty()) selectedSportTypeIds.first() else null
+                val eventTypeId = if (selectedEventTypeIds.isNotEmpty()) selectedEventTypeIds.first() else null
+                
+                val result = eventRepository.getEvents(
+                    sportTypeId = sportTypeId,
+                    eventTypeId = eventTypeId,
+                    search = searchQuery,
+                    city = city,
+                    dateFrom = dateFrom,
+                    dateTo = dateTo,
+                    includePrivate = false
+                )
+                
+                when (result) {
+                    is NetworkResult.Success -> {
+                        // Filter out private events
+                        val publicEvents = result.data.filter { it.is_public }
+                        Log.d(TAG, "Successfully loaded ${publicEvents.size} events")
+                        _events.value = NetworkResult.Success(publicEvents)
+                    }
+                    is NetworkResult.Error -> {
+                        Log.e(TAG, "Failed to load events: ${result.message}")
+                        _errorMessage.value = "Ошибка загрузки событий: ${result.message}"
+                        _events.value = result
+                    }
+                    is NetworkResult.Loading -> {
+                        _events.value = result
+                    }
                 }
             }
         }

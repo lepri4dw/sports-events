@@ -19,26 +19,20 @@
     </fragment>
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.sportevents.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard">
+        android:id="@+id/navigation_notifications"
+        android:name="com.example.sportevents.ui.profile.ProfileFragment"
+        android:label="@string/title_profile"
+        tools:layout="@layout/fragment_profile">
         <action
-            android:id="@+id/action_navigation_dashboard_to_createEventFragment"
+            android:id="@+id/action_navigation_notifications_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_navigation_notifications_to_createEventFragment"
             app:destination="@id/createEventFragment" />
         <action
-            android:id="@+id/action_navigation_dashboard_to_eventDetailFragment"
+            android:id="@+id/action_navigation_notifications_to_eventDetailFragment"
             app:destination="@id/eventDetailFragment" />
-        <action
-            android:id="@+id/action_navigation_dashboard_to_loginFragment"
-            app:destination="@id/loginFragment" />
     </fragment>
-
-    <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.sportevents.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
 
     <fragment
         android:id="@+id/loginFragment"
@@ -86,9 +80,9 @@
         android:label="Create Event"
         tools:layout="@layout/fragment_create_event">
         <action
-            android:id="@+id/action_createEventFragment_to_navigation_dashboard"
-            app:destination="@id/navigation_dashboard"
-            app:popUpTo="@id/navigation_dashboard"
+            android:id="@+id/action_createEventFragment_to_navigation_notifications"
+            app:destination="@id/navigation_notifications"
+            app:popUpTo="@id/navigation_notifications"
             app:popUpToInclusive="true" />
     </fragment>
 </navigation>

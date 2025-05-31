@@ -91,7 +91,7 @@ class EventCreateViewModel : ViewModel() {
             end_datetime = endDateTime,
             registration_deadline = registrationDeadline,
             max_participants = maxParticipants,
-            status = "ACTIVE",
+            status = "REGISTRATION_OPEN",
             is_public = isPublic,
             entry_fee = entryFee,
             contact_email = contactEmail,

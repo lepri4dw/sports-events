@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.43.53:8000/api/"
+    const val BASE_URL = "http://192.168.43.53:8000/api/"
     private const val TAG = "RetrofitClient"
 
     // Создаем настроенный Gson для правильной обработки типов

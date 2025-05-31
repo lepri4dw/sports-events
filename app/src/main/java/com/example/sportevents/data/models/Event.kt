@@ -23,7 +23,28 @@ data class Event(
     val contact_phone: String?,
     val created_at: String,
     val updated_at: String
-)
+) {
+    // Helper methods
+    fun isRegistrationOpen(): Boolean {
+        return status == "REGISTRATION_OPEN" || status == "ACTIVE"
+    }
+    
+    fun isFull(): Boolean {
+        return max_participants != null && current_participants_count >= max_participants
+    }
+    
+    fun isLocationSpecified(): Boolean {
+        return location != null || !custom_location_text.isNullOrBlank()
+    }
+    
+    fun getLocationDisplayText(): String {
+        return when {
+            location != null -> location.name
+            !custom_location_text.isNullOrBlank() -> custom_location_text
+            else -> "No location specified"
+        }
+    }
+}
 
 data class EventCreateRequest(
     val title: String,
