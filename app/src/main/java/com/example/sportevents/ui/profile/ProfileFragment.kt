@@ -127,8 +127,8 @@ class ProfileFragment : Fragment() {
         
         // Observe user statistics
         profileViewModel.userStatistics.observe(viewLifecycleOwner) { stats ->
-            binding.textViewEventsCreated.text = "Created: ${stats.eventsCreated}"
-            binding.textViewEventsJoined.text = "Joined: ${stats.eventsJoined}"
+            binding.textViewEventsCreated.text = getString(R.string.events_created, stats.eventsCreated)
+            binding.textViewEventsJoined.text = getString(R.string.events_joined, stats.eventsJoined)
         }
         
         // Observe login status changes

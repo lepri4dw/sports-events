@@ -40,12 +40,13 @@ class HomeViewModel : ViewModel() {
     private var city: String? = null
     private var dateFrom: String? = null
     private var dateTo: String? = null
+    private var status: String? = null
 
     fun loadEvents() {
         _events.value = NetworkResult.Loading
         Log.d(TAG, "Loading events with filters: sportType=${if (selectedSportTypeIds.isEmpty()) "none" else selectedSportTypeIds}, " +
                 "eventType=${if (selectedEventTypeIds.isEmpty()) "none" else selectedEventTypeIds}, " +
-                "search=$searchQuery, city=$city")
+                "search=$searchQuery, city=$city, status=$status")
 
         viewModelScope.launch {
             // Handle the case of multiple filters by doing multiple API requests and merging results
@@ -224,6 +225,10 @@ class HomeViewModel : ViewModel() {
         dateTo = to
     }
 
+    fun setStatusFilter(statusName: String?) {
+        status = statusName
+    }
+
     fun applyFilters() {
         loadEvents()
     }
@@ -235,5 +240,6 @@ class HomeViewModel : ViewModel() {
         city = null
         dateFrom = null
         dateTo = null
+        status = null
     }
 }

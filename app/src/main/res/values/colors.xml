@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Базовые цвета Material Design -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -8,14 +9,23 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- App specific colors -->
-    <color name="primary">#2196F3</color>
-    <color name="primary_dark">#1976D2</color>
-    <color name="primary_light">#BBDEFB</color>
-    <color name="secondary">#FF9800</color>
-    <color name="secondary_dark">#F57C00</color>
-    <color name="secondary_light">#FFE0B2</color>
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="divider">#BDBDBD</color>
+    <!-- Спортивная цветовая схема -->
+    <color name="primary">#2962FF</color> <!-- Синий -->
+    <color name="primary_dark">#0039CB</color> <!-- Темно-синий -->
+    <color name="primary_light">#768FFF</color> <!-- Светло-синий -->
+    <color name="secondary">#FF6D00</color> <!-- Оранжевый -->
+    <color name="secondary_dark">#C43C00</color> <!-- Темно-оранжевый -->
+    <color name="secondary_light">#FF9E40</color> <!-- Светло-оранжевый -->
+    <color name="background">#F5F5F6</color> <!-- Светло-серый фон -->
+    <color name="surface">#FFFFFF</color> <!-- Белый для карточек -->
+    <color name="text_primary">#212121</color> <!-- Почти черный для основного текста -->
+    <color name="text_secondary">#757575</color> <!-- Серый для вторичного текста -->
+    <color name="divider">#E0E0E0</color> <!-- Светло-серый для разделителей -->
+    <color name="error">#F44336</color> <!-- Красный для ошибок -->
+    <color name="success">#4CAF50</color> <!-- Зеленый для успеха -->
+    <color name="card_background">#FFFFFF</color> <!-- Белый фон для карточек -->
+    <color name="status_active">#43A047</color> <!-- Зеленый для активных событий -->
+    <color name="status_upcoming">#1E88E5</color> <!-- Синий для предстоящих событий -->
+    <color name="status_completed">#757575</color> <!-- Серый для завершенных событий -->
+    <color name="status_cancelled">#E53935</color> <!-- Красный для отмененных событий -->
 </resources>

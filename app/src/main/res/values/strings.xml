@@ -1,6 +1,115 @@
 <resources>
-    <string name="app_name">SportEvents</string>
-    <string name="title_home">Home</string>
-    <string name="title_notifications">Notifications</string>
-    <string name="title_profile">Profile</string>
+    <!-- Общие строки -->
+    <string name="app_name">Спортивные События</string>
+    <string name="title_home">Главная</string>
+    <string name="title_notifications">Уведомления</string>
+    <string name="title_profile">Профиль</string>
+    
+    <!-- Аутентификация -->
+    <string name="login">Вход</string>
+    <string name="register">Регистрация</string>
+    <string name="email">Email</string>
+    <string name="password">Пароль</string>
+    <string name="login_button">Войти</string>
+    <string name="register_button">Зарегистрироваться</string>
+    <string name="forgot_password">Забыли пароль?</string>
+    <string name="no_account">Нет аккаунта? Зарегистрируйтесь</string>
+    <string name="have_account">Уже есть аккаунт? Войдите</string>
+    <string name="display_name">Имя пользователя</string>
+    <string name="logout">Выйти</string>
+    <string name="login_successful">Вход выполнен успешно</string>
+    <string name="register_successful">Регистрация выполнена успешно</string>
+    <string name="logout_successful">Вы вышли из аккаунта</string>
+    
+    <!-- Профиль -->
+    <string name="events_created">Создано: %d</string>
+    <string name="events_joined">Участвует: %d</string>
+    <string name="tab_created_events">Созданные</string>
+    <string name="tab_registered_events">Участвует</string>
+    <string name="create_event">Создать событие</string>
+    <string name="login_to_view_profile">Войдите, чтобы увидеть профиль</string>
+    <string name="profile_login_prompt">Для просмотра профиля необходимо войти в систему</string>
+    <string name="no_events_created">Вы еще не создали мероприятий</string>
+    <string name="no_events_registered">Вы еще не зарегистрировались на мероприятия</string>
+    
+    <!-- События -->
+    <string name="event_details">Детали мероприятия</string>
+    <string name="event_title">Название</string>
+    <string name="event_description">Описание</string>
+    <string name="event_location">Место проведения</string>
+    <string name="event_date">Дата и время</string>
+    <string name="event_type">Тип мероприятия</string>
+    <string name="sport_type">Вид спорта</string>
+    <string name="event_organizer">Организатор</string>
+    <string name="max_participants">Максимум участников</string>
+    <string name="current_participants">Текущее количество участников</string>
+    <string name="entry_fee">Стоимость участия</string>
+    <string name="contact_info">Контактная информация</string>
+    <string name="register_for_event">Зарегистрироваться</string>
+    <string name="unregister_from_event">Отменить регистрацию</string>
+    <string name="event_status">Статус</string>
+    <string name="start_date">Дата начала</string>
+    <string name="end_date">Дата окончания</string>
+    <string name="registration_deadline">Дедлайн регистрации</string>
+    <string name="custom_location">Другое место</string>
+    <string name="is_public">Публичное мероприятие</string>
+    <string name="contact_email">Контактный email</string>
+    <string name="contact_phone">Контактный телефон</string>
+    <string name="create_event_button">Создать мероприятие</string>
+    <string name="update_event_button">Обновить мероприятие</string>
+    <string name="event_created">Мероприятие создано успешно</string>
+    <string name="event_creation_failed">Не удалось создать мероприятие: %s</string>
+    <string name="select_date">Выбрать дату</string>
+    <string name="no_events_found">Мероприятия не найдены</string>
+    <string name="search_events">Поиск мероприятий</string>
+    <string name="event_description_title">Описание</string>
+    <string name="event_register_title">Регистрация на мероприятие</string>
+    <string name="event_register_notes">Примечания (опционально)</string>
+    <string name="event_register_closed">Регистрация на это мероприятие закрыта</string>
+    <string name="event_contact_title">Контактная информация</string>
+    <string name="event_start_date">Начало: %s</string>
+    <string name="event_end_date">Окончание: %s</string>
+    <string name="event_location_format">Место: %s</string>
+    <string name="event_participants_format">Участники: %s</string>
+    <string name="event_fee_format">Стоимость участия: %s сом</string>
+    <string name="event_email_format">Email: %s</string>
+    <string name="event_phone_format">Телефон: %s</string>
+    <string name="event_organizer_format">Организатор: %s</string>
+    
+    <!-- Статусы событий -->
+    <string name="status_draft">Черновик</string>
+    <string name="status_planned">Запланировано</string>
+    <string name="status_registration_open">Регистрация открыта</string>
+    <string name="status_registration_closed">Регистрация закрыта</string>
+    <string name="status_active">Активно</string>
+    <string name="status_completed">Завершено</string>
+    <string name="status_cancelled">Отменено</string>
+    
+    <!-- Ошибки -->
+    <string name="error_login">Ошибка входа: %s</string>
+    <string name="error_register">Ошибка регистрации: %s</string>
+    <string name="error_loading_events">Ошибка загрузки событий: %s</string>
+    <string name="error_loading_details">Ошибка загрузки деталей: %s</string>
+    <string name="network_error">Ошибка сети. Проверьте подключение</string>
+    <string name="validation_error">Пожалуйста, заполните все обязательные поля</string>
+    
+    <!-- Подтверждения -->
+    <string name="confirm_unregister">Вы уверены, что хотите отменить регистрацию?</string>
+    <string name="confirm_delete">Вы уверены, что хотите удалить это событие?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
+    <string name="cancel">Отмена</string>
+    <string name="ok">OK</string>
+    
+    <!-- Фильтры -->
+    <string name="filter_all">Все</string>
+    <string name="filter_upcoming">Предстоящие</string>
+    <string name="filter_active">Активные</string>
+    <string name="filter_completed">Завершенные</string>
+    <string name="filter_sports">Фильтр по видам спорта</string>
+    <string name="filter_events">Фильтр по типам мероприятий</string>
+    <string name="apply_filters">Применить фильтры</string>
+    <string name="reset_filters">Сбросить фильтры</string>
+    <string name="close_filters">Сбросить фильтры</string>
+    <string name="show_filters">Показать фильтры</string>
 </resources>

@@ -191,12 +191,12 @@ class HomeFragment : Fragment() {
     
     private fun setupFilterButtons() {
         binding.buttonShowFilters.setOnClickListener {
-            if (binding.filterLayout.visibility == View.VISIBLE) {
-                binding.filterLayout.visibility = View.GONE
-                binding.buttonShowFilters.text = "Show Filters"
+            if (binding.filterCard.visibility == View.VISIBLE) {
+                binding.filterCard.visibility = View.GONE
+                binding.buttonShowFilters.text = getString(R.string.show_filters)
             } else {
-                binding.filterLayout.visibility = View.VISIBLE
-                binding.buttonShowFilters.text = "Hide Filters"
+                binding.filterCard.visibility = View.VISIBLE
+                binding.buttonShowFilters.text = getString(R.string.close_filters)
             }
         }
         
@@ -207,6 +207,28 @@ class HomeFragment : Fragment() {
             viewModel.clearFilters()
             viewModel.loadEvents()
         }
+
+        binding.buttonApplyFilters.setOnClickListener {
+            viewModel.applyFilters()
+            binding.filterCard.visibility = View.GONE
+            binding.buttonShowFilters.text = getString(R.string.show_filters)
+        }
+
+        // Настройка табов для фильтрации по статусу
+        binding.statusTabLayout.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> viewModel.setStatusFilter(null) // Все
+                    1 -> viewModel.setStatusFilter("upcoming") // Предстоящие
+                    2 -> viewModel.setStatusFilter("active") // Активные
+                    3 -> viewModel.setStatusFilter("completed") // Завершенные
+                }
+                viewModel.applyFilters()
+            }
+
+            override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+            override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab?) {}
+        })
     }
 
     override fun onDestroyView() {

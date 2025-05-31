@@ -4,105 +4,169 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".ui.home.HomeFragment">
 
-    <SearchView
-        android:id="@+id/searchView"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/searchCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:background="@drawable/bg_search"
-        android:iconifiedByDefault="false"
-        android:queryHint="Search events"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Button
+        <SearchView
+            android:id="@+id/searchView"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:iconifiedByDefault="false"
+            android:queryHint="@string/search_events"
+            android:background="@null" />
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonShowFilters"
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
-        android:text="Show Filters"
+        android:layout_marginEnd="16dp"
+        android:text="@string/show_filters"
+        android:textColor="@color/primary"
+        app:icon="@drawable/ic_filter"
+        app:iconTint="@color/primary"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchView" />
+        app:layout_constraintTop_toBottomOf="@+id/searchCard" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/filterLayout"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/filterCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/bg_filter_section"
-        android:padding="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="3dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonShowFilters">
 
-        <TextView
-            android:id="@+id/textViewSportTypeFilter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sport Types"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <HorizontalScrollView
-            android:id="@+id/scrollViewSportTypes"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/filterLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:scrollbars="none"
-            app:layout_constraintTop_toBottomOf="@+id/textViewSportTypeFilter">
+            android:padding="16dp">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupSportTypes"
+            <TextView
+                android:id="@+id/textViewSportTypeFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="false" />
-        </HorizontalScrollView>
+                android:text="@string/filter_sports"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/textViewEventTypeFilter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Event Types"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scrollViewSportTypes" />
+            <HorizontalScrollView
+                android:id="@+id/scrollViewSportTypes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:scrollbars="none"
+                app:layout_constraintTop_toBottomOf="@+id/textViewSportTypeFilter">
 
-        <HorizontalScrollView
-            android:id="@+id/scrollViewEventTypes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:scrollbars="none"
-            app:layout_constraintTop_toBottomOf="@+id/textViewEventTypeFilter">
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupSportTypes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="false" />
+            </HorizontalScrollView>
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipGroupEventTypes"
+            <TextView
+                android:id="@+id/textViewEventTypeFilter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:singleSelection="false" />
-        </HorizontalScrollView>
+                android:layout_marginTop="16dp"
+                android:text="@string/filter_events"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/scrollViewSportTypes" />
 
-        <Button
-            android:id="@+id/buttonClearFilters"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            <HorizontalScrollView
+                android:id="@+id/scrollViewEventTypes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:scrollbars="none"
+                app:layout_constraintTop_toBottomOf="@+id/textViewEventTypeFilter">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupEventTypes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="false" />
+            </HorizontalScrollView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonApplyFilters"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/apply_filters"
+                android:textAllCaps="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/scrollViewEventTypes" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonClearFilters"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:text="@string/close_filters"
+                android:textAllCaps="false"
+                app:layout_constraintEnd_toStartOf="@+id/buttonApplyFilters"
+                app:layout_constraintTop_toTopOf="@+id/buttonApplyFilters" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/statusTabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/surface"
+        app:layout_constraintTop_toBottomOf="@+id/filterCard"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/primary"
+        app:tabIndicatorHeight="3dp"
+        app:tabMode="fixed"
+        app:tabMaxWidth="0dp"
+        app:tabSelectedTextColor="@color/primary"
+        app:tabTextColor="@color/text_secondary">
+
+        <com.google.android.material.tabs.TabItem
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Clear Filters"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scrollViewEventTypes" />
+            android:text="@string/filter_all" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/filter_upcoming" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/filter_active" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/filter_completed" />
+    </com.google.android.material.tabs.TabLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
@@ -112,12 +176,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/filterLayout">
+        app:layout_constraintTop_toBottomOf="@+id/statusTabLayout">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewEvents"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
             tools:listitem="@layout/item_event" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -128,13 +195,13 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:gravity="center"
-        android:text="No events found"
-        android:textSize="18sp"
+        android:text="@string/no_events_found"
+        android:textAppearance="?attr/textAppearanceBody1"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/swipeRefreshLayout" />
 
     <ProgressBar
         android:id="@+id/progressBar"

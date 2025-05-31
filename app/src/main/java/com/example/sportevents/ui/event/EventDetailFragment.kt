@@ -1,5 +1,7 @@
 package com.example.sportevents.ui.event
 
+import android.graphics.Color
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +17,7 @@ import com.example.sportevents.databinding.FragmentEventDetailBinding
 import com.example.sportevents.ui.auth.AuthViewModel
 import com.example.sportevents.util.AuthManager
 import com.example.sportevents.util.NetworkResult
+import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -71,7 +74,7 @@ class EventDetailFragment : Fragment() {
                     }
                     
                     binding.contentLayout.visibility = View.VISIBLE
-                    displayEventDetails(result.data)
+                    updateEventDetails(result.data)
                 }
                 is NetworkResult.Error -> {
                     binding.progressBar.visibility = View.GONE
@@ -128,60 +131,61 @@ class EventDetailFragment : Fragment() {
         }
     }
 
-    private fun displayEventDetails(event: Event) {
+    private fun updateEventDetails(event: Event) {
         binding.textViewTitle.text = event.title
+        binding.textViewSportType.text = event.sport_type.name
+        binding.textViewEventType.text = event.event_type.name
         binding.textViewDescription.text = event.description
-        binding.textViewSportType.text = "Sport: ${event.sport_type.name}"
-        binding.textViewEventType.text = "Event type: ${event.event_type.name}"
+        binding.textViewOrganizer.text = getString(R.string.event_organizer_format, event.organizer.display_name)
         
-        binding.textViewLocation.text = "Location: ${event.getLocationDisplayText()}"
+        val startDateFormatted = formatDate(event.start_datetime)
+        binding.textViewStartDate.text = getString(R.string.event_start_date, startDateFormatted)
         
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-        val displayFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-        
-        val startDate = dateFormat.parse(event.start_datetime)
-        binding.textViewStartDate.text = "Starts: ${displayFormat.format(startDate!!)}"
-        
-        event.end_datetime?.let {
-            val endDate = dateFormat.parse(it)
-            binding.textViewEndDate.text = "Ends: ${displayFormat.format(endDate!!)}"
+        if (event.end_datetime != null) {
+            val endDateFormatted = formatDate(event.end_datetime)
+            binding.textViewEndDate.text = getString(R.string.event_end_date, endDateFormatted)
             binding.textViewEndDate.visibility = View.VISIBLE
-        } ?: run {
+        } else {
             binding.textViewEndDate.visibility = View.GONE
         }
         
-        binding.textViewOrganizer.text = "Organized by: ${event.organizer.display_name}"
+        binding.textViewLocation.text = getString(R.string.event_location_format, event.getLocationDisplayText())
         
         val participantsText = if (event.max_participants != null) {
-            "${event.current_participants_count}/${event.max_participants} participants"
+            "${event.current_participants_count}/${event.max_participants}"
         } else {
-            "${event.current_participants_count} participants"
+            "${event.current_participants_count}"
         }
-        binding.textViewParticipants.text = participantsText
+        binding.textViewParticipants.text = getString(R.string.event_participants_format, participantsText)
         
-        event.entry_fee?.let {
-            binding.textViewEntryFee.text = "Entry fee: $${it}"
+        if (event.entry_fee != null && event.entry_fee > BigDecimal.ZERO) {
+            binding.textViewEntryFee.text = getString(R.string.event_fee_format, event.entry_fee.toString())
             binding.textViewEntryFee.visibility = View.VISIBLE
-        } ?: run {
+        } else {
             binding.textViewEntryFee.visibility = View.GONE
         }
         
-        event.contact_email?.let {
-            binding.textViewContactEmail.text = "Contact email: $it"
+        if (!event.contact_email.isNullOrBlank()) {
+            binding.textViewContactEmail.text = getString(R.string.event_email_format, event.contact_email)
             binding.textViewContactEmail.visibility = View.VISIBLE
-        } ?: run {
+        } else {
             binding.textViewContactEmail.visibility = View.GONE
         }
         
-        event.contact_phone?.let {
-            binding.textViewContactPhone.text = "Contact phone: $it"
+        if (!event.contact_phone.isNullOrBlank()) {
+            binding.textViewContactPhone.text = getString(R.string.event_phone_format, event.contact_phone)
             binding.textViewContactPhone.visibility = View.VISIBLE
-        } ?: run {
+        } else {
             binding.textViewContactPhone.visibility = View.GONE
         }
         
-        // Update registration section visibility
-        updateRegistrationVisibility(event)
+        // Обновление статуса события
+        val statusText = getStatusText(event.status)
+        binding.statusChip.text = statusText
+        binding.statusChip.chipBackgroundColor = ColorStateList.valueOf(getStatusColor(event.status))
+        
+        // Проверка возможности регистрации
+        updateRegistrationStatus(event)
     }
     
     private fun updateRegistrationVisibility(event: Event) {
@@ -190,6 +194,74 @@ class EventDetailFragment : Fragment() {
         val isUserRegistered = viewModel.isUserRegisteredForEvent(event)
         
         Log.d(TAG, "Updating registration visibility: organizer=$isOrganizer, registered=$isUserRegistered, event=${event.id}")
+        
+        if (isOrganizer) {
+            // Organizers can't register for their own events
+            binding.registrationSection.visibility = View.GONE
+            binding.textViewRegistrationClosed.text = "You are the organizer of this event"
+            binding.textViewRegistrationClosed.visibility = View.VISIBLE
+        } else if (isUserRegistered) {
+            // User is already registered
+            binding.registrationSection.visibility = View.GONE
+            binding.textViewRegistrationClosed.text = "You are already registered for this event"
+            binding.textViewRegistrationClosed.visibility = View.VISIBLE
+        } else if (!event.isRegistrationOpen()) {
+            // Event not accepting registrations
+            binding.registrationSection.visibility = View.GONE
+            binding.textViewRegistrationClosed.text = "This event is not accepting registrations"
+            binding.textViewRegistrationClosed.visibility = View.VISIBLE
+        } else if (event.isFull()) {
+            // Event is full
+            binding.registrationSection.visibility = View.GONE
+            binding.textViewRegistrationClosed.text = "This event has reached maximum participants"
+            binding.textViewRegistrationClosed.visibility = View.VISIBLE
+        } else {
+            // User can register
+            binding.registrationSection.visibility = View.VISIBLE
+            binding.textViewRegistrationClosed.visibility = View.GONE
+        }
+    }
+
+    private fun formatDate(date: String): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val displayFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+        
+        val parsedDate = dateFormat.parse(date)
+        return displayFormat.format(parsedDate!!)
+    }
+
+    private fun getStatusText(status: String): String {
+        return when (status) {
+            "DRAFT" -> getString(R.string.status_draft)
+            "PLANNED" -> getString(R.string.status_planned)
+            "REGISTRATION_OPEN" -> getString(R.string.status_registration_open)
+            "REGISTRATION_CLOSED" -> getString(R.string.status_registration_closed)
+            "ACTIVE" -> getString(R.string.status_active)
+            "COMPLETED" -> getString(R.string.status_completed)
+            "CANCELLED" -> getString(R.string.status_cancelled)
+            else -> status
+        }
+    }
+
+    private fun getStatusColor(status: String): Int {
+        return when (status) {
+            "DRAFT" -> Color.parseColor("#9E9E9E") // Серый
+            "PLANNED" -> Color.parseColor("#FFA000") // Янтарный
+            "REGISTRATION_OPEN" -> Color.parseColor("#2962FF") // Синий
+            "REGISTRATION_CLOSED" -> Color.parseColor("#FF6D00") // Оранжевый
+            "ACTIVE" -> Color.parseColor("#00C853") // Зеленый
+            "COMPLETED" -> Color.parseColor("#6200EA") // Фиолетовый
+            "CANCELLED" -> Color.parseColor("#D50000") // Красный
+            else -> Color.parseColor("#000000") // Черный
+        }
+    }
+
+    private fun updateRegistrationStatus(event: Event) {
+        val currentUserId = AuthManager.getCurrentUser()?.id
+        val isOrganizer = event.organizer.id == currentUserId
+        val isUserRegistered = viewModel.isUserRegisteredForEvent(event)
+        
+        Log.d(TAG, "Updating registration status: organizer=$isOrganizer, registered=$isUserRegistered, event=${event.id}")
         
         if (isOrganizer) {
             // Organizers can't register for their own events
