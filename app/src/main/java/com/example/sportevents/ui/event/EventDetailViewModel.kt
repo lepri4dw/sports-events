@@ -24,8 +24,8 @@ class EventDetailViewModel : ViewModel() {
     private val _registrationResult = MutableLiveData<NetworkResult<EventRegistration>>()
     val registrationResult: LiveData<NetworkResult<EventRegistration>> = _registrationResult
 
-    private val _unregisterResult = MutableLiveData<NetworkResult<Unit>>()
-    val unregisterResult: LiveData<NetworkResult<Unit>> = _unregisterResult
+    private val _unregistrationResult = MutableLiveData<NetworkResult<Void>>()
+    val unregistrationResult: LiveData<NetworkResult<Void>> = _unregistrationResult
 
     private val _userRegistrations = MutableLiveData<NetworkResult<List<EventRegistration>>>()
     val userRegistrations: LiveData<NetworkResult<List<EventRegistration>>> = _userRegistrations
@@ -40,7 +40,7 @@ class EventDetailViewModel : ViewModel() {
 
     fun registerForEvent(eventId: Int, notes: String? = null) {
         if (!AuthManager.isLoggedIn()) {
-            _registrationResult.value = NetworkResult.Error("You must be logged in to register")
+            _registrationResult.value = NetworkResult.Error("Вы должны войти в систему, чтобы зарегистрироваться")
             return
         }
 
@@ -48,39 +48,51 @@ class EventDetailViewModel : ViewModel() {
 
         viewModelScope.launch {
             _registrationResult.value = registrationRepository.registerForEvent(eventId, notes)
-            // Refresh user registrations after registering
+            // Обновляем регистрации пользователя после регистрации
             loadUserRegistrations()
         }
     }
 
     fun unregisterFromEvent(eventId: Int) {
         if (!AuthManager.isLoggedIn()) {
-            _unregisterResult.value = NetworkResult.Error("You must be logged in to unregister")
+            _unregistrationResult.value = NetworkResult.Error("Вы должны войти в систему, чтобы отменить регистрацию")
             return
         }
 
-        _unregisterResult.value = NetworkResult.Loading
+        _unregistrationResult.value = NetworkResult.Loading
 
         viewModelScope.launch {
-            _unregisterResult.value = registrationRepository.unregisterFromEvent(eventId)
-            // Refresh user registrations after unregistering
+            val result = registrationRepository.unregisterFromEvent(eventId)
+            if (result is NetworkResult.Success) {
+                _unregistrationResult.value = result
+            } else if (result is NetworkResult.Error) {
+                _unregistrationResult.value = NetworkResult.Error(result.message)
+            }
+            // Обновляем регистрации пользователя после отмены регистрации
             loadUserRegistrations()
         }
     }
 
     fun loadUserRegistrations() {
         if (!AuthManager.isLoggedIn()) {
-            _userRegistrations.value = NetworkResult.Error("User not logged in")
+            _userRegistrations.value = NetworkResult.Error("Пользователь не вошел в систему")
             return
         }
 
-        Log.d(TAG, "Loading user registrations")
+        Log.d(TAG, "Загрузка регистраций пользователя")
         _userRegistrations.value = NetworkResult.Loading
 
         viewModelScope.launch {
             val result = registrationRepository.getUserRegistrations()
-            Log.d(TAG, "User registrations loaded: $result")
-            _userRegistrations.value = result
+            
+            if (result is NetworkResult.Success) {
+                // Сохраняем все регистрации, включая отмененные
+                Log.d(TAG, "Регистрации пользователя загружены: ${result.data.size}")
+                _userRegistrations.value = result
+            } else {
+                Log.d(TAG, "Ошибка загрузки регистраций пользователя: $result")
+                _userRegistrations.value = result
+            }
         }
     }
 
@@ -91,14 +103,15 @@ class EventDetailViewModel : ViewModel() {
 
         val registrations = _userRegistrations.value
         if (registrations is NetworkResult.Success) {
-            Log.d(TAG, "Checking registrations for event ID: ${event.id}")
-            Log.d(TAG, "User has ${registrations.data.size} registrations")
+            Log.d(TAG, "Проверка регистраций для мероприятия ID: ${event.id}")
+            Log.d(TAG, "У пользователя ${registrations.data.size} регистраций")
             
-            // Find registration for this event
+            // Находим активную регистрацию для этого мероприятия
             return registrations.data.any { registration ->
                 val regEventId = registration.getEventId()
-                Log.d(TAG, "Comparing registration event ID: $regEventId with event ID: ${event.id}")
-                regEventId == event.id
+                val isActiveStatus = registration.status == "PENDING_APPROVAL" || registration.status == "CONFIRMED"
+                Log.d(TAG, "Сравнение ID мероприятия в регистрации: $regEventId с ID мероприятия: ${event.id}, статус: ${registration.status}, активен: $isActiveStatus")
+                regEventId == event.id && isActiveStatus
             }
         }
         return false
@@ -111,12 +124,24 @@ class EventDetailViewModel : ViewModel() {
 
         val registrations = _userRegistrations.value
         if (registrations is NetworkResult.Success) {
-            // Find registration status for this event
+            // Находим любую регистрацию для этого мероприятия (включая отмененные)
             val registration = registrations.data.find { registration ->
                 registration.getEventId() == event.id
             }
+            Log.d(TAG, "Статус регистрации для мероприятия ${event.id}: ${registration?.status}")
             return registration?.status
         }
         return null
+    }
+    
+    fun getRegistrationStatusText(status: String): String {
+        return when (status) {
+            "PENDING_APPROVAL" -> "Ожидает подтверждения"
+            "CONFIRMED" -> "Подтверждено"
+            "REJECTED_BY_ORGANIZER" -> "Отклонено организатором"
+            "CANCELLED_BY_USER" -> "Отменено пользователем"
+            "ATTENDED" -> "Посетил"
+            else -> status
+        }
     }
 }

@@ -44,12 +44,12 @@ class EventDetailFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(EventDetailViewModel::class.java)
         authViewModel = ViewModelProvider(this).get(AuthViewModel::class.java)
 
-        // Get eventId from arguments bundle
+        // Получаем ID мероприятия из аргументов
         eventId = arguments?.getInt("eventId") ?: 0
         
         viewModel.loadEvent(eventId)
         
-        // If user is logged in, check if they're already registered
+        // Если пользователь авторизован, проверяем его регистрацию
         if (authViewModel.isLoggedIn()) {
             viewModel.loadUserRegistrations()
         }
@@ -64,17 +64,18 @@ class EventDetailFragment : Fragment() {
                 is NetworkResult.Success -> {
                     binding.progressBar.visibility = View.GONE
                     
-                    // Check if this is a private event and the user is not the organizer
+                    // Проверяем, является ли мероприятие приватным и пользователь не организатор
                     val currentUserId = AuthManager.getCurrentUser()?.id
                     if (!result.data.is_public && result.data.organizer.id != currentUserId) {
-                        Toast.makeText(requireContext(), "This event is private and you don't have access to it", Toast.LENGTH_LONG).show()
-                        // Navigate back
+                        Toast.makeText(requireContext(), "Это приватное мероприятие, к которому у вас нет доступа", Toast.LENGTH_LONG).show()
+                        // Возвращаемся назад
                         findNavController().popBackStack()
                         return@observe
                     }
                     
                     binding.contentLayout.visibility = View.VISIBLE
                     updateEventDetails(result.data)
+                    updateActionButtons(result.data)
                 }
                 is NetworkResult.Error -> {
                     binding.progressBar.visibility = View.GONE
@@ -92,8 +93,8 @@ class EventDetailFragment : Fragment() {
                 is NetworkResult.Success -> {
                     binding.buttonRegister.isEnabled = true
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), "Registration successful", Toast.LENGTH_SHORT).show()
-                    viewModel.loadEvent(eventId) // Reload event data
+                    Toast.makeText(requireContext(), "Регистрация успешно завершена", Toast.LENGTH_SHORT).show()
+                    viewModel.loadEvent(eventId) // Перезагружаем данные мероприятия
                 }
                 is NetworkResult.Error -> {
                     binding.buttonRegister.isEnabled = true
@@ -107,10 +108,32 @@ class EventDetailFragment : Fragment() {
             }
         }
         
+        viewModel.unregistrationResult.observe(viewLifecycleOwner) { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    binding.buttonCancelRegistration.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Вы успешно отменили регистрацию", Toast.LENGTH_SHORT).show()
+                    
+                    // После отмены регистрации перенаправляем на страницу профиля
+                    findNavController().navigate(R.id.action_eventDetailFragment_to_navigation_notifications)
+                }
+                is NetworkResult.Error -> {
+                    binding.buttonCancelRegistration.isEnabled = true
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                }
+                is NetworkResult.Loading -> {
+                    binding.buttonCancelRegistration.isEnabled = false
+                    binding.progressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+        
         viewModel.userRegistrations.observe(viewLifecycleOwner) { result ->
             if (result is NetworkResult.Success) {
-                Log.d(TAG, "Got ${result.data.size} user registrations")
-                // Check if the registration visibility needs updating
+                Log.d(TAG, "Получено ${result.data.size} регистраций пользователя")
+                // Проверяем, нужно ли обновить видимость кнопок регистрации
                 viewModel.event.value?.let { eventResult ->
                     if (eventResult is NetworkResult.Success) {
                         updateRegistrationVisibility(eventResult.data)
@@ -128,6 +151,24 @@ class EventDetailFragment : Fragment() {
             } else {
                 findNavController().navigate(R.id.action_eventDetailFragment_to_loginFragment)
             }
+        }
+        
+        binding.buttonCancelRegistration.setOnClickListener {
+            viewModel.unregisterFromEvent(eventId)
+        }
+        
+        binding.buttonEditEvent.setOnClickListener {
+            val bundle = Bundle().apply {
+                putInt("eventId", eventId)
+            }
+            findNavController().navigate(R.id.action_eventDetailFragment_to_editEventFragment, bundle)
+        }
+        
+        binding.buttonParticipants.setOnClickListener {
+            val bundle = Bundle().apply {
+                putInt("eventId", eventId)
+            }
+            findNavController().navigate(R.id.action_eventDetailFragment_to_participantListFragment, bundle)
         }
     }
 
@@ -188,35 +229,75 @@ class EventDetailFragment : Fragment() {
         updateRegistrationStatus(event)
     }
     
+    private fun updateActionButtons(event: Event) {
+        val currentUserId = AuthManager.getCurrentUser()?.id
+        val isOrganizer = event.organizer.id == currentUserId
+        
+        // Кнопка редактирования
+        binding.buttonEditEvent.visibility = if (isOrganizer) View.VISIBLE else View.GONE
+        
+        // Кнопка участников
+        binding.buttonParticipants.visibility = if (isOrganizer) View.VISIBLE else View.GONE
+    }
+    
     private fun updateRegistrationVisibility(event: Event) {
         val currentUserId = AuthManager.getCurrentUser()?.id
         val isOrganizer = event.organizer.id == currentUserId
         val isUserRegistered = viewModel.isUserRegisteredForEvent(event)
+        val registrationStatus = viewModel.getRegistrationStatusForEvent(event)
         
-        Log.d(TAG, "Updating registration visibility: organizer=$isOrganizer, registered=$isUserRegistered, event=${event.id}")
+        Log.d(TAG, "Обновление видимости регистрации: организатор=$isOrganizer, зарегистрирован=$isUserRegistered, статус=$registrationStatus, мероприятие=${event.id}")
+        
+        binding.buttonCancelRegistration.visibility = View.GONE
         
         if (isOrganizer) {
-            // Organizers can't register for their own events
+            // Организаторы не могут регистрироваться на свои мероприятия
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "You are the organizer of this event"
+            binding.textViewRegistrationClosed.text = "Вы организатор этого мероприятия"
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
         } else if (isUserRegistered) {
-            // User is already registered
+            // Пользователь уже зарегистрирован с активным статусом
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "You are already registered for this event"
+            
+            // Отображаем статус регистрации
+            val statusText = if (registrationStatus != null) {
+                "Вы зарегистрированы на это мероприятие (${viewModel.getRegistrationStatusText(registrationStatus)})"
+            } else {
+                "Вы зарегистрированы на это мероприятие"
+            }
+            binding.textViewRegistrationClosed.text = statusText
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
+            
+            // Показываем кнопку отмены только для активных регистраций
+            if (registrationStatus == "PENDING_APPROVAL" || registrationStatus == "CONFIRMED") {
+                binding.buttonCancelRegistration.visibility = View.VISIBLE
+            }
+        } else if (registrationStatus == "CANCELLED_BY_USER" || registrationStatus == "REJECTED_BY_ORGANIZER") {
+            // Регистрация была отменена или отклонена, но пользователь может зарегистрироваться снова
+            if (event.isRegistrationOpen() && !event.isFull()) {
+                binding.registrationSection.visibility = View.VISIBLE
+                binding.textViewRegistrationClosed.visibility = View.GONE
+            } else {
+                binding.registrationSection.visibility = View.GONE
+                if (!event.isRegistrationOpen()) {
+                    binding.textViewRegistrationClosed.text = "Это мероприятие не принимает регистрации"
+                } else {
+                    binding.textViewRegistrationClosed.text = "Это мероприятие достигло максимального количества участников"
+                }
+                binding.textViewRegistrationClosed.visibility = View.VISIBLE
+            }
         } else if (!event.isRegistrationOpen()) {
-            // Event not accepting registrations
+            // Мероприятие не принимает регистрации
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "This event is not accepting registrations"
+            binding.textViewRegistrationClosed.text = "Это мероприятие не принимает регистрации"
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
         } else if (event.isFull()) {
-            // Event is full
+            // Мероприятие заполнено
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "This event has reached maximum participants"
+            binding.textViewRegistrationClosed.text = "Это мероприятие достигло максимального количества участников"
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
         } else {
-            // User can register
+            // Пользователь может зарегистрироваться
             binding.registrationSection.visibility = View.VISIBLE
             binding.textViewRegistrationClosed.visibility = View.GONE
         }
@@ -260,31 +341,60 @@ class EventDetailFragment : Fragment() {
         val currentUserId = AuthManager.getCurrentUser()?.id
         val isOrganizer = event.organizer.id == currentUserId
         val isUserRegistered = viewModel.isUserRegisteredForEvent(event)
+        val registrationStatus = viewModel.getRegistrationStatusForEvent(event)
         
-        Log.d(TAG, "Updating registration status: organizer=$isOrganizer, registered=$isUserRegistered, event=${event.id}")
+        Log.d(TAG, "Обновление статуса регистрации: организатор=$isOrganizer, зарегистрирован=$isUserRegistered, статус=$registrationStatus, мероприятие=${event.id}")
+        
+        binding.buttonCancelRegistration.visibility = View.GONE
         
         if (isOrganizer) {
-            // Organizers can't register for their own events
+            // Организаторы не могут регистрироваться на свои мероприятия
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "You are the organizer of this event"
+            binding.textViewRegistrationClosed.text = "Вы организатор этого мероприятия"
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
         } else if (isUserRegistered) {
-            // User is already registered
+            // Пользователь уже зарегистрирован с активным статусом
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "You are already registered for this event"
+            
+            // Отображаем статус регистрации
+            val statusText = if (registrationStatus != null) {
+                "Вы зарегистрированы на это мероприятие (${viewModel.getRegistrationStatusText(registrationStatus)})"
+            } else {
+                "Вы зарегистрированы на это мероприятие"
+            }
+            binding.textViewRegistrationClosed.text = statusText
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
+            
+            // Показываем кнопку отмены только для активных регистраций
+            if (registrationStatus == "PENDING_APPROVAL" || registrationStatus == "CONFIRMED") {
+                binding.buttonCancelRegistration.visibility = View.VISIBLE
+            }
+        } else if (registrationStatus == "CANCELLED_BY_USER" || registrationStatus == "REJECTED_BY_ORGANIZER") {
+            // Регистрация была отменена или отклонена, но пользователь может зарегистрироваться снова
+            if (event.isRegistrationOpen() && !event.isFull()) {
+                binding.registrationSection.visibility = View.VISIBLE
+                binding.textViewRegistrationClosed.visibility = View.GONE
+            } else {
+                binding.registrationSection.visibility = View.GONE
+                if (!event.isRegistrationOpen()) {
+                    binding.textViewRegistrationClosed.text = "Это мероприятие не принимает регистрации"
+                } else {
+                    binding.textViewRegistrationClosed.text = "Это мероприятие достигло максимального количества участников"
+                }
+                binding.textViewRegistrationClosed.visibility = View.VISIBLE
+            }
         } else if (!event.isRegistrationOpen()) {
-            // Event not accepting registrations
+            // Мероприятие не принимает регистрации
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "This event is not accepting registrations"
+            binding.textViewRegistrationClosed.text = "Это мероприятие не принимает регистрации"
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
         } else if (event.isFull()) {
-            // Event is full
+            // Мероприятие заполнено
             binding.registrationSection.visibility = View.GONE
-            binding.textViewRegistrationClosed.text = "This event has reached maximum participants"
+            binding.textViewRegistrationClosed.text = "Это мероприятие достигло максимального количества участников"
             binding.textViewRegistrationClosed.visibility = View.VISIBLE
         } else {
-            // User can register
+            // Пользователь может зарегистрироваться
             binding.registrationSection.visibility = View.VISIBLE
             binding.textViewRegistrationClosed.visibility = View.GONE
         }

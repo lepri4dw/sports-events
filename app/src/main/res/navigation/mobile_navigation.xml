@@ -72,6 +72,35 @@
         <action
             android:id="@+id/action_eventDetailFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_eventDetailFragment_to_editEventFragment"
+            app:destination="@id/editEventFragment" />
+        <action
+            android:id="@+id/action_eventDetailFragment_to_participantListFragment"
+            app:destination="@id/participantListFragment" />
+        <action
+            android:id="@+id/action_eventDetailFragment_to_navigation_notifications"
+            app:destination="@id/navigation_notifications" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editEventFragment"
+        android:name="com.example.sportevents.ui.event.EditEventFragment"
+        android:label="@string/edit_event_title"
+        tools:layout="@layout/fragment_edit_event">
+        <argument
+            android:name="eventId"
+            app:argType="integer" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/participantListFragment"
+        android:name="com.example.sportevents.ui.event.ParticipantListFragment"
+        android:label="@string/participants_title"
+        tools:layout="@layout/fragment_participant_list">
+        <argument
+            android:name="eventId"
+            app:argType="integer" />
     </fragment>
 
     <fragment

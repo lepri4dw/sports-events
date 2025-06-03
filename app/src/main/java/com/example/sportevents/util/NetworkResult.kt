@@ -12,4 +12,23 @@ sealed class NetworkResult<out T> {
             is Loading -> this
         }
     }
+    
+    // Утилита для упрощения обработки NetworkResult в when-выражениях
+    inline fun handle(
+        onSuccess: (T) -> Unit,
+        onError: (String) -> Unit,
+        onLoading: () -> Unit
+    ) {
+        when (this) {
+            is Success -> onSuccess(data)
+            is Error -> onError(message)
+            is Loading -> onLoading()
+        }
+    }
+}
+
+// Функция-расширение для создания успешного результата с типом Void
+fun createVoidSuccess(): NetworkResult<Void> {
+    @Suppress("UNCHECKED_CAST")
+    return NetworkResult.Success(null) as NetworkResult<Void>
 } 

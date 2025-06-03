@@ -1,11 +1,13 @@
 package com.example.sportevents.data.repositories
 
+import android.util.Log
 import com.example.sportevents.data.models.*
 import com.example.sportevents.data.network.RetrofitClient
 import com.example.sportevents.util.AuthManager
 import com.example.sportevents.util.NetworkResult
 
 class AuthRepository : BaseRepository() {
+    private val TAG = "AuthRepository"
     private val apiService = RetrofitClient.apiService
 
     suspend fun registerUser(email: String, displayName: String, password: String): NetworkResult<AuthResponse> {
@@ -14,7 +16,7 @@ class AuthRepository : BaseRepository() {
 
         if (response is NetworkResult.Success) {
             AuthManager.saveTokens(response.data.access, response.data.refresh)
-            AuthManager.saveUser(response.data.user)
+            AuthManager.setCurrentUser(response.data.user)
         }
 
         return response
@@ -26,7 +28,7 @@ class AuthRepository : BaseRepository() {
 
         if (response is NetworkResult.Success) {
             AuthManager.saveTokens(response.data.access, response.data.refresh)
-            AuthManager.saveUser(response.data.user)
+            AuthManager.setCurrentUser(response.data.user)
         }
 
         return response
@@ -44,17 +46,29 @@ class AuthRepository : BaseRepository() {
     }
 
     suspend fun getCurrentUser(): NetworkResult<User> {
-        return safeApiCall { apiService.getCurrentUser() }
+        return safeApiCall { apiService.getCurrentUser() }.also { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    Log.d(TAG, "Successfully fetched current user: ${result.data.display_name}")
+                    AuthManager.setCurrentUser(result.data)
+                }
+                is NetworkResult.Error -> Log.e(TAG, "Error fetching current user: ${result.message}")
+                is NetworkResult.Loading -> Log.d(TAG, "Loading current user...")
+            }
+        }
     }
 
     suspend fun updateCurrentUser(updates: Map<String, Any>): NetworkResult<User> {
-        val response = safeApiCall { apiService.updateCurrentUser(updates) }
-
-        if (response is NetworkResult.Success) {
-            AuthManager.saveUser(response.data)
+        return safeApiCall { apiService.updateCurrentUser(updates) }.also { result ->
+            when (result) {
+                is NetworkResult.Success -> {
+                    Log.d(TAG, "Successfully updated current user: ${result.data.display_name}")
+                    AuthManager.setCurrentUser(result.data)
+                }
+                is NetworkResult.Error -> Log.e(TAG, "Error updating current user: ${result.message}")
+                is NetworkResult.Loading -> Log.d(TAG, "Updating current user...")
+            }
         }
-
-        return response
     }
 
     fun logout() {

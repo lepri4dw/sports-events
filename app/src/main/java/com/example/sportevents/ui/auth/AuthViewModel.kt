@@ -45,7 +45,7 @@ class AuthViewModel : ViewModel() {
                         is NetworkResult.Success -> {
                             Log.d(TAG, "Profile fetch successful")
                             // Update the stored user with complete profile info
-                            AuthManager.saveUser(userResult.data)
+                            AuthManager.setCurrentUser(userResult.data)
                             _currentUser.value = userResult.data
                             _loginResult.value = NetworkResult.Success(userResult.data)
                         }
@@ -85,7 +85,7 @@ class AuthViewModel : ViewModel() {
                         is NetworkResult.Success -> {
                             Log.d(TAG, "Profile fetch successful")
                             // Update the stored user with complete profile info
-                            AuthManager.saveUser(userResult.data)
+                            AuthManager.setCurrentUser(userResult.data)
                             _currentUser.value = userResult.data
                             _registerResult.value = NetworkResult.Success(userResult.data)
                         }

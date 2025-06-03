@@ -45,6 +45,11 @@ object AuthManager {
         val userJson = Gson().toJson(user)
         prefs.edit().putString(KEY_USER, userJson).apply()
     }
+    
+    // Алиас для saveUser для обратной совместимости
+    fun setCurrentUser(user: User) {
+        saveUser(user)
+    }
 
     fun getAccessToken(): String? {
         return try {

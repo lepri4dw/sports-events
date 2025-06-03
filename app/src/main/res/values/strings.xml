@@ -76,6 +76,37 @@
     <string name="event_phone_format">Телефон: %s</string>
     <string name="event_organizer_format">Организатор: %s</string>
     
+    <!-- Редактирование мероприятия -->
+    <string name="edit_event_title">Редактирование мероприятия</string>
+    <string name="edit_event_button">Редактировать</string>
+    <string name="cancel_button">Отмена</string>
+    <string name="save_button">Сохранить</string>
+    <string name="event_title_hint">Название мероприятия</string>
+    <string name="event_description_hint">Описание мероприятия</string>
+    <string name="sport_type_hint">Вид спорта</string>
+    <string name="event_type_hint">Тип мероприятия</string>
+    <string name="location_hint">Местоположение</string>
+    <string name="start_datetime_hint">Дата и время начала</string>
+    <string name="end_datetime_hint">Дата и время окончания (опционально)</string>
+    <string name="registration_deadline_hint">Срок регистрации (опционально)</string>
+    <string name="max_participants_hint">Максимальное количество участников</string>
+    <string name="event_status_hint">Статус мероприятия</string>
+    <string name="public_event">Публичное мероприятие</string>
+    <string name="entry_fee_hint">Стоимость участия (опционально)</string>
+    <string name="contact_email_hint">Контактный email (опционально)</string>
+    <string name="contact_phone_hint">Контактный телефон (опционально)</string>
+    
+    <!-- Список участников -->
+    <string name="participants_title">Участники мероприятия</string>
+    <string name="participants_button">Участники</string>
+    <string name="no_participants">На данное мероприятие пока нет зарегистрированных участников</string>
+    <string name="approve_button">Подтвердить</string>
+    <string name="reject_button">Отклонить</string>
+    <string name="cancel_registration_button">Отменить регистрацию</string>
+    <string name="registration_status">Статус регистрации</string>
+    <string name="registration_date">Дата регистрации</string>
+    <string name="user_notes">Примечания пользователя</string>
+    
     <!-- Статусы событий -->
     <string name="status_draft">Черновик</string>
     <string name="status_planned">Запланировано</string>
@@ -84,6 +115,12 @@
     <string name="status_active">Активно</string>
     <string name="status_completed">Завершено</string>
     <string name="status_cancelled">Отменено</string>
+    
+    <!-- Статусы регистраций -->
+    <string name="registration_status_pending">Ожидает подтверждения</string>
+    <string name="registration_status_approved">Подтверждено</string>
+    <string name="registration_status_rejected">Отклонено</string>
+    <string name="registration_status_cancelled">Отменено</string>
     
     <!-- Ошибки -->
     <string name="error_login">Ошибка входа: %s</string>

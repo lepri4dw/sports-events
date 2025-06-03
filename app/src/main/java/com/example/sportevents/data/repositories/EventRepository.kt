@@ -48,11 +48,11 @@ class EventRepository : BaseRepository() {
         return safeApiCall { apiService.createEvent(eventCreateRequest) }
     }
 
-    suspend fun updateEvent(id: Int, updates: Map<String, Any>): NetworkResult<Event> {
+    suspend fun updateEvent(id: Int, updates: EventUpdateRequest): NetworkResult<Event> {
         return safeApiCall { apiService.updateEvent(id, updates) }
     }
 
-    suspend fun deleteEvent(id: Int): NetworkResult<Unit> {
-        return safeApiCall { apiService.deleteEvent(id) }
+    suspend fun deleteEvent(id: Int): NetworkResult<Void> {
+        return safeApiCallVoid { apiService.deleteEvent(id) }
     }
 }

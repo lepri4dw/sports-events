@@ -69,11 +69,11 @@ interface ApiService {
     @PUT("events/{id}/")
     suspend fun updateEvent(
         @Path("id") id: Int,
-        @Body updates: Map<String, Any>
+        @Body updates: EventUpdateRequest
     ): Response<Event>
 
     @DELETE("events/{id}/")
-    suspend fun deleteEvent(@Path("id") id: Int): Response<Unit>
+    suspend fun deleteEvent(@Path("id") id: Int): Response<Void>
 
     // Event Registrations
     @POST("events/{eventId}/register/")
@@ -83,10 +83,10 @@ interface ApiService {
     ): Response<EventRegistration>
 
     @DELETE("events/{eventId}/unregister/")
-    suspend fun unregisterFromEvent(@Path("eventId") eventId: Int): Response<Unit>
+    suspend fun unregisterFromEvent(@Path("eventId") eventId: Int): Response<Void>
 
     @GET("events/{eventId}/registrations/")
-    suspend fun getEventRegistrations(@Path("eventId") eventId: Int): Response<PaginatedResponse<EventRegistration>>
+    suspend fun getEventRegistrations(@Path("eventId") eventId: Int): Response<List<EventRegistration>>
 
     @GET("registrations/")
     suspend fun getUserRegistrations(): Response<PaginatedResponse<EventRegistration>>

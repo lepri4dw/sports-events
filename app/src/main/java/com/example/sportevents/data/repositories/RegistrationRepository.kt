@@ -7,6 +7,7 @@ import com.example.sportevents.data.models.RegistrationStatusUpdateRequest
 import com.example.sportevents.data.network.RetrofitClient
 import com.example.sportevents.util.AuthManager
 import com.example.sportevents.util.NetworkResult
+import retrofit2.Response
 
 class RegistrationRepository : BaseRepository() {
     private val TAG = "RegistrationRepository"
@@ -16,7 +17,7 @@ class RegistrationRepository : BaseRepository() {
         Log.d(TAG, "Регистрация на мероприятие $eventId с заметками: $notes")
         Log.d(TAG, "Токен для запроса регистрации: ${AuthManager.getAccessToken()?.take(15)}...")
         
-        val request = RegistrationRequest(notes_by_user = notes)
+        val request = RegistrationRequest(notesByUser = notes)
         return safeApiCall { 
             Log.d(TAG, "Вызов API регистрации для мероприятия $eventId")
             apiService.registerForEvent(eventId, request) 
@@ -29,11 +30,11 @@ class RegistrationRepository : BaseRepository() {
         }
     }
 
-    suspend fun unregisterFromEvent(eventId: Int): NetworkResult<Unit> {
+    suspend fun unregisterFromEvent(eventId: Int): NetworkResult<Void> {
         Log.d(TAG, "Unregistering from event $eventId")
         Log.d(TAG, "Токен для запроса отмены регистрации: ${AuthManager.getAccessToken()?.take(15)}...")
         
-        return safeApiCall { 
+        return safeApiCallVoid { 
             apiService.unregisterFromEvent(eventId) 
         }.also { result ->
             when (result) {
@@ -70,8 +71,8 @@ class RegistrationRepository : BaseRepository() {
         return safeApiCall { apiService.getEventRegistrations(eventId) }.let { result ->
             when (result) {
                 is NetworkResult.Success -> {
-                    Log.d(TAG, "Got ${result.data.results.size} registrations for event $eventId")
-                    NetworkResult.Success(result.data.results)
+                    Log.d(TAG, "Got ${result.data.size} registrations for event $eventId")
+                    result
                 }
                 is NetworkResult.Error -> {
                     Log.e(TAG, "Error getting event registrations: ${result.message}")

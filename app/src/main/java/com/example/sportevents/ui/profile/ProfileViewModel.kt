@@ -42,7 +42,7 @@ class ProfileViewModel : ViewModel() {
             
             if (result is NetworkResult.Success) {
                 // Update the stored user data
-                AuthManager.saveUser(result.data)
+                AuthManager.setCurrentUser(result.data)
             }
         }
     }
@@ -51,7 +51,7 @@ class ProfileViewModel : ViewModel() {
         viewModelScope.launch {
             val currentUserId = AuthManager.getCurrentUser()?.id ?: return@launch
             
-            // Get events created by user
+            // Получаем мероприятия, созданные пользователем
             val eventsResult = eventRepository.getEvents(includePrivate = true)
             var eventsCreatedCount = 0
             
@@ -59,12 +59,15 @@ class ProfileViewModel : ViewModel() {
                 eventsCreatedCount = eventsResult.data.count { it.organizer.id == currentUserId }
             }
             
-            // Get events joined by user
+            // Получаем мероприятия, на которые зарегистрирован пользователь
             val registrationsResult = registrationRepository.getUserRegistrations()
             var eventsJoinedCount = 0
             
             if (registrationsResult is NetworkResult.Success) {
-                eventsJoinedCount = registrationsResult.data.size
+                // Учитываем только активные регистрации
+                eventsJoinedCount = registrationsResult.data.count { 
+                    it.status == "PENDING_APPROVAL" || it.status == "CONFIRMED" || it.status == "ATTENDED"
+                }
             }
             
             _userStatistics.value = UserStatistics(
@@ -83,7 +86,7 @@ class ProfileViewModel : ViewModel() {
             
             if (result is NetworkResult.Success) {
                 // Update the stored user data
-                AuthManager.saveUser(result.data)
+                AuthManager.setCurrentUser(result.data)
             }
         }
     }
@@ -117,15 +120,20 @@ class ProfileViewModel : ViewModel() {
             val registrationsResult = registrationRepository.getUserRegistrations()
             
             if (registrationsResult is NetworkResult.Success) {
-                // Extract event IDs
-                val eventIds = registrationsResult.data.mapNotNull { it.getEventId() }
+                // Фильтруем отмененные регистрации
+                val activeRegistrations = registrationsResult.data.filter { 
+                    it.status == "PENDING_APPROVAL" || it.status == "CONFIRMED" || it.status == "ATTENDED"
+                }
+                
+                // Извлекаем ID мероприятий
+                val eventIds = activeRegistrations.mapNotNull { it.getEventId() }
                 
                 if (eventIds.isEmpty()) {
                     _events.value = NetworkResult.Success(emptyList())
                     return@launch
                 }
                 
-                // Fetch full event details for each registered event
+                // Получаем полную информацию о мероприятиях для каждой регистрации
                 val events = mutableListOf<Event>()
                 var hasError = false
                 
@@ -142,10 +150,10 @@ class ProfileViewModel : ViewModel() {
                 if (!hasError) {
                     _events.value = NetworkResult.Success(events)
                 } else {
-                    _events.value = NetworkResult.Error("Failed to load some registered events")
+                    _events.value = NetworkResult.Error("Не удалось загрузить некоторые мероприятия")
                 }
             } else {
-                _events.value = NetworkResult.Error("Failed to load registrations")
+                _events.value = NetworkResult.Error("Не удалось загрузить регистрации")
             }
         }
     }

@@ -63,3 +63,21 @@ data class EventCreateRequest(
     val contact_email: String?,
     val contact_phone: String?
 )
+
+data class EventUpdateRequest(
+    var title: String? = null,
+    var description: String? = null,
+    var sport_type_id: Int? = null,
+    var event_type_id: Int? = null,
+    var location_id: Int? = null,
+    var custom_location_text: String? = null,
+    var start_datetime: String? = null,
+    var end_datetime: String? = null,
+    var registration_deadline: String? = null,
+    var max_participants: Int? = null,
+    var status: String? = null,
+    var is_public: Boolean? = null,
+    var entry_fee: String? = null,
+    var contact_email: String? = null,
+    var contact_phone: String? = null
+)

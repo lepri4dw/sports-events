@@ -6,11 +6,13 @@ import com.google.gson.internal.LinkedTreeMap
 
 data class EventRegistration(
     val id: Int,
-    val event: Any?,
+    val event: Any,
     val user: User,
-    val registration_datetime: String,
+    @SerializedName("registration_datetime")
+    val registrationDatetime: String,
     val status: String,
-    val notes_by_user: String?
+    @SerializedName("notes_by_user")
+    val notesByUser: String?
 ) {
     private val TAG = "EventRegistration"
     
@@ -18,20 +20,42 @@ data class EventRegistration(
         return when (event) {
             is Event -> event
             is Int -> null
-            is Map<*, *> -> null // Обработка JSON объекта
+            is Double -> null // Обработка числового ID в JSON
+            is Map<*, *> -> try {
+                // Преобразование Map в Event
+                val map = event as Map<*, *>
+                Log.d(TAG, "Извлечение события из Map: $map")
+                
+                // Такое преобразование требует больше работы и фактически 
+                // лучше это делать через Gson с правильным TypeAdapter
+                // Это упрощенная версия для примера
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка при преобразовании Map в Event: ${e.message}")
+                null
+            }
+            is LinkedTreeMap<*, *> -> try {
+                // Аналогично с LinkedTreeMap
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "Ошибка при преобразовании LinkedTreeMap в Event: ${e.message}")
+                null
+            }
             else -> null
         }
     }
     
     fun getEventId(): Int? {
+        if (event == null) return null
+        
         return when (event) {
             is Event -> event.id
             is Int -> event
+            is Double -> event.toInt() // JSON числа часто парсятся как Double
             is Map<*, *> -> {
                 try {
                     val map = event as Map<*, *>
                     val idValue = map["id"]
-                    Log.d(TAG, "Извлечение ID события из Map: $idValue")
                     when (idValue) {
                         is Int -> idValue
                         is Double -> idValue.toInt()
@@ -46,7 +70,6 @@ data class EventRegistration(
             is LinkedTreeMap<*, *> -> {
                 try {
                     val idValue = (event as LinkedTreeMap<*, *>)["id"]
-                    Log.d(TAG, "Извлечение ID события из LinkedTreeMap: $idValue")
                     when (idValue) {
                         is Int -> idValue
                         is Double -> idValue.toInt()
@@ -59,7 +82,11 @@ data class EventRegistration(
                 }
             }
             else -> {
-                Log.w(TAG, "Неизвестный тип данных события: ${event?.javaClass?.name}")
+                try {
+                    Log.w(TAG, "Неизвестный тип данных события: ${event.javaClass.name}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Ошибка при получении информации о типе события: ${e.message}")
+                }
                 null
             }
         }
@@ -67,8 +94,10 @@ data class EventRegistration(
 }
 
 data class RegistrationRequest(
-    val notes_by_user: String? = null,
-    val user_id: Int? = null
+    @SerializedName("notes_by_user")
+    val notesByUser: String? = null,
+    @SerializedName("user_id")
+    val userId: Int? = null
 )
 
 data class RegistrationStatusUpdateRequest(
