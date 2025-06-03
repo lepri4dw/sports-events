@@ -346,6 +346,7 @@ class EventDetailFragment : Fragment() {
         Log.d(TAG, "Обновление статуса регистрации: организатор=$isOrganizer, зарегистрирован=$isUserRegistered, статус=$registrationStatus, мероприятие=${event.id}")
         
         binding.buttonCancelRegistration.visibility = View.GONE
+        binding.registrationStatusChip.visibility = View.GONE
         
         if (isOrganizer) {
             // Организаторы не могут регистрироваться на свои мероприятия
@@ -369,6 +370,13 @@ class EventDetailFragment : Fragment() {
             if (registrationStatus == "PENDING_APPROVAL" || registrationStatus == "CONFIRMED") {
                 binding.buttonCancelRegistration.visibility = View.VISIBLE
             }
+            
+            // Отображаем бейдж статуса регистрации
+            if (registrationStatus != null) {
+                binding.registrationStatusChip.text = "Статус: ${viewModel.getRegistrationStatusText(registrationStatus)}"
+                binding.registrationStatusChip.chipBackgroundColor = ColorStateList.valueOf(getRegistrationStatusColor(registrationStatus))
+                binding.registrationStatusChip.visibility = View.VISIBLE
+            }
         } else if (registrationStatus == "CANCELLED_BY_USER" || registrationStatus == "REJECTED_BY_ORGANIZER") {
             // Регистрация была отменена или отклонена, но пользователь может зарегистрироваться снова
             if (event.isRegistrationOpen() && !event.isFull()) {
@@ -383,6 +391,11 @@ class EventDetailFragment : Fragment() {
                 }
                 binding.textViewRegistrationClosed.visibility = View.VISIBLE
             }
+            
+            // Отображаем бейдж статуса предыдущей регистрации
+            binding.registrationStatusChip.text = "Предыдущая регистрация: ${viewModel.getRegistrationStatusText(registrationStatus)}"
+            binding.registrationStatusChip.chipBackgroundColor = ColorStateList.valueOf(getRegistrationStatusColor(registrationStatus))
+            binding.registrationStatusChip.visibility = View.VISIBLE
         } else if (!event.isRegistrationOpen()) {
             // Мероприятие не принимает регистрации
             binding.registrationSection.visibility = View.GONE
@@ -397,6 +410,17 @@ class EventDetailFragment : Fragment() {
             // Пользователь может зарегистрироваться
             binding.registrationSection.visibility = View.VISIBLE
             binding.textViewRegistrationClosed.visibility = View.GONE
+        }
+    }
+
+    private fun getRegistrationStatusColor(status: String): Int {
+        return when (status) {
+            "PENDING_APPROVAL" -> Color.parseColor("#FFA000") // Янтарный
+            "CONFIRMED" -> Color.parseColor("#00C853") // Зеленый
+            "REJECTED_BY_ORGANIZER" -> Color.parseColor("#D50000") // Красный
+            "CANCELLED_BY_USER" -> Color.parseColor("#757575") // Серый
+            "ATTENDED" -> Color.parseColor("#2962FF") // Синий
+            else -> Color.parseColor("#9E9E9E") // Серый
         }
     }
 

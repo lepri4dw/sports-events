@@ -49,14 +49,14 @@ class ProfileViewModel : ViewModel() {
     
     fun loadUserStatistics() {
         viewModelScope.launch {
-            val currentUserId = AuthManager.getCurrentUser()?.id ?: return@launch
+            val currentUser = AuthManager.getCurrentUser()?.id ?: return@launch
             
             // Получаем мероприятия, созданные пользователем
             val eventsResult = eventRepository.getEvents(includePrivate = true)
             var eventsCreatedCount = 0
             
             if (eventsResult is NetworkResult.Success) {
-                eventsCreatedCount = eventsResult.data.count { it.organizer.id == currentUserId }
+                eventsCreatedCount = eventsResult.data.count { it.organizer.id == currentUser }
             }
             
             // Получаем мероприятия, на которые зарегистрирован пользователь
@@ -65,8 +65,26 @@ class ProfileViewModel : ViewModel() {
             
             if (registrationsResult is NetworkResult.Success) {
                 // Учитываем только активные регистрации
-                eventsJoinedCount = registrationsResult.data.count { 
+                val activeRegistrations = registrationsResult.data.filter { 
                     it.status == "PENDING_APPROVAL" || it.status == "CONFIRMED" || it.status == "ATTENDED"
+                }
+                
+                // Извлекаем ID мероприятий
+                val eventIds = activeRegistrations.mapNotNull { it.getEventId() }
+                
+                if (eventIds.isNotEmpty()) {
+                    // Получаем полную информацию о мероприятиях для каждой регистрации
+                    // и исключаем мероприятия, созданные самим пользователем
+                    for (id in eventIds) {
+                        val eventResult = eventRepository.getEvent(id)
+                        if (eventResult is NetworkResult.Success) {
+                            val event = eventResult.data
+                            // Исключаем мероприятия, созданные самим пользователем
+                            if (event.organizer.id != currentUser) {
+                                eventsJoinedCount++
+                            }
+                        }
+                    }
                 }
             }
             
@@ -117,6 +135,12 @@ class ProfileViewModel : ViewModel() {
         _events.value = NetworkResult.Loading
         
         viewModelScope.launch {
+            val currentUser = AuthManager.getCurrentUser()
+            if (currentUser == null) {
+                _events.value = NetworkResult.Error("User not logged in")
+                return@launch
+            }
+            
             val registrationsResult = registrationRepository.getUserRegistrations()
             
             if (registrationsResult is NetworkResult.Success) {
@@ -140,7 +164,11 @@ class ProfileViewModel : ViewModel() {
                 for (id in eventIds) {
                     val eventResult = eventRepository.getEvent(id)
                     if (eventResult is NetworkResult.Success) {
-                        events.add(eventResult.data)
+                        val event = eventResult.data
+                        // Исключаем мероприятия, созданные самим пользователем
+                        if (event.organizer.id != currentUser.id) {
+                            events.add(event)
+                        }
                     } else {
                         hasError = true
                         break

@@ -54,11 +54,11 @@ class ParticipantListViewModel : ViewModel() {
     }
     
     fun approveRegistration(registrationId: Int) {
-        updateRegistrationStatus(registrationId, "APPROVED")
+        updateRegistrationStatus(registrationId, "CONFIRMED")
     }
     
     fun rejectRegistration(registrationId: Int) {
-        updateRegistrationStatus(registrationId, "REJECTED")
+        updateRegistrationStatus(registrationId, "REJECTED_BY_ORGANIZER")
     }
     
     private fun updateRegistrationStatus(registrationId: Int, status: String) {
@@ -92,10 +92,11 @@ class ParticipantListViewModel : ViewModel() {
     
     fun getStatusText(status: String): String {
         return when (status) {
-            "PENDING" -> "Ожидает подтверждения"
-            "APPROVED" -> "Подтверждено"
-            "REJECTED" -> "Отклонено"
-            "CANCELLED" -> "Отменено"
+            "PENDING_APPROVAL" -> "Ожидает подтверждения"
+            "CONFIRMED" -> "Подтверждено"
+            "REJECTED_BY_ORGANIZER" -> "Отклонено организатором"
+            "CANCELLED_BY_USER" -> "Отменено пользователем"
+            "ATTENDED" -> "Посетил"
             else -> status
         }
     }

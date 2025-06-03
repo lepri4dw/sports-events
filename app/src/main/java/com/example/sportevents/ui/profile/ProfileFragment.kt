@@ -160,7 +160,7 @@ class ProfileFragment : Fragment() {
                         binding.textViewNoEvents.text = if (tabPosition == 0) {
                             "Вы еще не создали мероприятий"
                         } else {
-                            "Вы еще не зарегистрировались на мероприятия"
+                            "Вы не участвуете ни в одном мероприятии"
                         }
                     } else {
                         binding.textViewNoEvents.visibility = View.GONE

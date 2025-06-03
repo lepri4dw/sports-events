@@ -67,7 +67,8 @@ class HomeViewModel : ViewModel() {
                             city = city,
                             dateFrom = dateFrom,
                             dateTo = dateTo,
-                            includePrivate = false
+                            includePrivate = false,
+                            status = status
                         )
                         
                         when (result) {
@@ -101,7 +102,8 @@ class HomeViewModel : ViewModel() {
                             city = city,
                             dateFrom = dateFrom,
                             dateTo = dateTo,
-                            includePrivate = false
+                            includePrivate = false,
+                            status = status
                         )
                         
                         when (result) {
@@ -131,7 +133,15 @@ class HomeViewModel : ViewModel() {
                     _events.value = NetworkResult.Error(errorMessage)
                 } else {
                     Log.d(TAG, "Successfully loaded ${allEvents.size} events")
-                    _events.value = NetworkResult.Success(allEvents)
+                    
+                    // Фильтрация по статусу, если статус задан
+                    val filteredEvents = if (status != null) {
+                        allEvents.filter { it.status == status }
+                    } else {
+                        allEvents
+                    }
+                    
+                    _events.value = NetworkResult.Success(filteredEvents)
                 }
             } else {
                 // Simple case with single sport type and event type filters
@@ -145,7 +155,8 @@ class HomeViewModel : ViewModel() {
                     city = city,
                     dateFrom = dateFrom,
                     dateTo = dateTo,
-                    includePrivate = false
+                    includePrivate = false,
+                    status = status
                 )
                 
                 when (result) {

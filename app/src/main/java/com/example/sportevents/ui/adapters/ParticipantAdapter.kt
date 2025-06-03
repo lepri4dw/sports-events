@@ -86,7 +86,7 @@ class ParticipantAdapter(
             
             // Если пользователь организатор, показываем кнопки подтверждения/отклонения
             if (isOrganizer) {
-                if (registration.status == "PENDING") {
+                if (registration.status == "PENDING_APPROVAL") {
                     binding.buttonApprove.visibility = View.VISIBLE
                     binding.buttonReject.visibility = View.VISIBLE
                     
@@ -101,7 +101,7 @@ class ParticipantAdapter(
             } else {
                 // Если пользователь не организатор, но это его регистрация
                 // и она в статусе PENDING или APPROVED, показываем кнопку отмены
-                if (registration.status == "PENDING" || registration.status == "APPROVED") {
+                if (registration.status == "PENDING_APPROVAL" || registration.status == "CONFIRMED") {
                     binding.buttonCancel.visibility = View.VISIBLE
                     binding.buttonCancel.setOnClickListener {
                         onCancelClick(registration)
@@ -112,20 +112,22 @@ class ParticipantAdapter(
         
         private fun getStatusText(status: String): String {
             return when (status) {
-                "PENDING" -> "Ожидает подтверждения"
-                "APPROVED" -> "Подтверждено"
-                "REJECTED" -> "Отклонено"
-                "CANCELLED" -> "Отменено"
+                "PENDING_APPROVAL" -> "Ожидает подтверждения"
+                "CONFIRMED" -> "Подтверждено"
+                "REJECTED_BY_ORGANIZER" -> "Отклонено организатором"
+                "CANCELLED_BY_USER" -> "Отменено пользователем"
+                "ATTENDED" -> "Посетил"
                 else -> status
             }
         }
         
         private fun getStatusColor(status: String): Int {
             return when (status) {
-                "PENDING" -> Color.parseColor("#FFA000") // Янтарный
-                "APPROVED" -> Color.parseColor("#00C853") // Зеленый
-                "REJECTED" -> Color.parseColor("#D50000") // Красный
-                "CANCELLED" -> Color.parseColor("#757575") // Серый
+                "PENDING_APPROVAL" -> Color.parseColor("#FFA000") // Янтарный
+                "CONFIRMED" -> Color.parseColor("#00C853") // Зеленый
+                "REJECTED_BY_ORGANIZER" -> Color.parseColor("#D50000") // Красный
+                "CANCELLED_BY_USER" -> Color.parseColor("#757575") // Серый
+                "ATTENDED" -> Color.parseColor("#2962FF") // Синий
                 else -> Color.parseColor("#9E9E9E") // Серый
             }
         }

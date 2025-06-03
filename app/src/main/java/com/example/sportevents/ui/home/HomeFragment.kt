@@ -219,9 +219,9 @@ class HomeFragment : Fragment() {
             override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab?) {
                 when (tab?.position) {
                     0 -> viewModel.setStatusFilter(null) // Все
-                    1 -> viewModel.setStatusFilter("upcoming") // Предстоящие
-                    2 -> viewModel.setStatusFilter("active") // Активные
-                    3 -> viewModel.setStatusFilter("completed") // Завершенные
+                    1 -> viewModel.setStatusFilter("REGISTRATION_OPEN") // Открыта регистрация
+                    2 -> viewModel.setStatusFilter("ACTIVE") // Активные
+                    3 -> viewModel.setStatusFilter("COMPLETED") // Завершенные
                 }
                 viewModel.applyFilters()
             }

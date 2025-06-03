@@ -24,8 +24,8 @@
     <!-- Профиль -->
     <string name="events_created">Создано: %d</string>
     <string name="events_joined">Участвует: %d</string>
-    <string name="tab_created_events">Созданные</string>
-    <string name="tab_registered_events">Участвует</string>
+    <string name="tab_created_events">Организатор</string>
+    <string name="tab_registered_events">Участник</string>
     <string name="create_event">Создать событие</string>
     <string name="login_to_view_profile">Войдите, чтобы увидеть профиль</string>
     <string name="profile_login_prompt">Для просмотра профиля необходимо войти в систему</string>
@@ -140,7 +140,7 @@
     
     <!-- Фильтры -->
     <string name="filter_all">Все</string>
-    <string name="filter_upcoming">Предстоящие</string>
+    <string name="filter_registration_open">Открыта регистрация</string>
     <string name="filter_active">Активные</string>
     <string name="filter_completed">Завершенные</string>
     <string name="filter_sports">Фильтр по видам спорта</string>

@@ -94,11 +94,13 @@
                     android:layout_height="wrap_content"
                     android:padding="16dp">
 
-                    <LinearLayout
+                    <com.google.android.flexbox.FlexboxLayout
                         android:id="@+id/chipContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        app:flexWrap="wrap"
+                        app:alignItems="flex_start"
+                        app:flexDirection="row"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
 
@@ -119,19 +121,15 @@
                             app:chipBackgroundColor="@color/secondary"
                             tools:text="Матч" />
 
-                        <View
-                            android:layout_width="0dp"
-                            android:layout_height="0dp"
-                            android:layout_weight="1" />
-
                         <com.google.android.material.chip.Chip
                             android:id="@+id/statusChip"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
                             android:textColor="@color/white"
                             app:chipBackgroundColor="@color/status_upcoming"
                             tools:text="Предстоящее" />
-                    </LinearLayout>
+                    </com.google.android.flexbox.FlexboxLayout>
 
                     <TextView
                         android:id="@+id/textViewOrganizer"
@@ -229,6 +227,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
+            <!-- Бейдж статуса регистрации -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/registrationStatusChip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                android:textColor="@color/white"
+                app:chipBackgroundColor="@color/primary"
+                app:layout_constraintTop_toBottomOf="@id/buttonCancelRegistration"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:text="Статус регистрации: Подтверждено"
+                tools:visibility="visible" />
+
             <!-- Карточка с описанием -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/descriptionCardView"
@@ -239,7 +251,7 @@
                 app:cardElevation="4dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/buttonCancelRegistration">
+                app:layout_constraintTop_toBottomOf="@+id/registrationStatusChip">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"

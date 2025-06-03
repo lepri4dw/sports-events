@@ -44,7 +44,7 @@ class LoginFragment : Fragment() {
                 binding.progressBar.visibility = View.VISIBLE
                 viewModel.login(email, password)
             } else {
-                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Пожалуйста, заполните все поля", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -59,11 +59,25 @@ class LoginFragment : Fragment() {
             
             when (result) {
                 is NetworkResult.Success -> {
-                    Toast.makeText(requireContext(), "Login successful", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.login_successful), Toast.LENGTH_SHORT).show()
                     findNavController().navigate(R.id.action_loginFragment_to_navigation_home)
                 }
                 is NetworkResult.Error -> {
-                    Toast.makeText(requireContext(), result.message, Toast.LENGTH_LONG).show()
+                    val errorMessage = when {
+                        result.message.contains("Authentication required") -> 
+                            "Необходима авторизация. Пожалуйста, войдите в систему."
+                        result.message.contains("Authentication error") -> 
+                            "Ошибка авторизации. Пожалуйста, войдите снова."
+                        result.message.contains("Unable to log in") || 
+                        result.message.contains("No active account") -> 
+                            "Неверный email или пароль. Пожалуйста, проверьте введенные данные."
+                        result.message.contains("Connection timed out") -> 
+                            "Превышено время ожидания соединения. Проверьте подключение к интернету."
+                        result.message.contains("Unable to connect") -> 
+                            "Не удалось подключиться к серверу. Проверьте подключение к интернету."
+                        else -> "Ошибка входа: ${result.message}"
+                    }
+                    Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show()
                 }
                 is NetworkResult.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
