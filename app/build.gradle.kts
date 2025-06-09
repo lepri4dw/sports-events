@@ -35,6 +35,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 }
 
@@ -61,5 +62,8 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("androidx.recyclerview:recyclerview:1.3.0")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
+
+    implementation("com.airbnb.android:lottie:6.4.0")
+    implementation("com.tbuonomo:dotsindicator:4.3")
 
 }
